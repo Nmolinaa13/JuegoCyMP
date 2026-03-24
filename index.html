@@ -1672,9 +1672,16 @@ function triggerRandomEvent(){
       stealRandomTerritory(ti);
       break;
 
-    case 'all_lose_one':
+       case 'all_lose_one': {
+      let affectedTeams = 0;
+
       for(let i = 0; i < state.numTeams; i++){
-        loseRandomTerritory(i);
+        const removed = loseRandomTerritory(i);
+        if(removed) affectedTeams++;
+      }
+
+      if(affectedTeams === 0){
+        addLog('Tormenta mediática: ningún equipo perdió territorio porque todos tenían 2 o menos.', 'event');
       }
       break;
 
@@ -1727,13 +1734,23 @@ function stealRandomTerritory(teamIdx){
 }
 
 function loseRandomTerritory(teamIdx){
-  const mine = Object.entries(state.map).filter(([k,v])=>v===teamIdx);
-  if(mine.length<=2) return;
-  const [key] = mine[Math.floor(Math.random()*mine.length)];
-  state.map[key] = null;
-  addLog(`${state.teams[teamIdx].name} perdió ${DEPARTMENTS[key].name} (tormenta mediática).`, 'bad');
-}
+  // Recontar desde el mapa real
+  const mine = Object.entries(state.map).filter(([_, owner]) => owner === teamIdx);
 
+  // Protección mínima: si tiene 2 o menos, no pierde
+  if(mine.length <= 2){
+    addLog(`${state.teams[teamIdx].name} no pierde territorio porque solo tiene ${mine.length}.`, 'info');
+    return false;
+  }
+
+  const [key] = mine[Math.floor(Math.random() * mine.length)];
+  const deptName = DEPARTMENTS[key]?.name || key;
+
+  state.map[key] = null;
+
+  addLog(`${state.teams[teamIdx].name} perdió ${deptName} (tormenta mediática).`, 'bad');
+  return true;
+}
 function renderEventBanner(){
   if(!state.activeEvent) {
     document.getElementById('eventBannerContainer').innerHTML=''; return;
