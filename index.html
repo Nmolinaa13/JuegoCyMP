@@ -1413,7 +1413,6 @@ function onDeptClick(key){
     const stealingTeam = state.pendingSteal;
     const owner = state.map[key];
 
-    // Solo se puede robar un territorio enemigo ya conquistado
     if(owner === null || owner === undefined){
       showModal('Robo de Territorio', '<p>Debes seleccionar un departamento que ya pertenezca a otro equipo.</p>');
       return;
@@ -1450,16 +1449,35 @@ function onDeptClick(key){
   if(state.phase !== 'select') return;
   const team = state.teams[state.currentTeam];
 
+  // SI EL EQUIPO ESTÁ BLOQUEADO, CONSUMIR EL BLOQUEO Y AVANZAR
   if(team.skipTurns > 0){
-    showModal('Turno Bloqueado', `<p>${team.name} tiene el turno bloqueado por evento político. <strong>Turnos restantes bloqueados: ${team.skipTurns}</strong></p>`);
+    team.skipTurns--;
+
+    showModal(
+      'Turno Bloqueado',
+      `<p>${team.name} pierde este turno por evento político.</p>
+       <p><strong>Turnos bloqueados restantes:</strong> ${team.skipTurns}</p>`
+    );
+
+    cancelQuestion();
+
+    document.getElementById('modalBtn').onclick = () => {
+      closeModal();
+      advanceTurn();
+    };
     return;
   }
 
   const owner = state.map[key];
   if(owner !== null && owner !== undefined && owner !== state.currentTeam){
-    const allianceActive = state.alliancePairs.some(([a,b]) =>
-      (a===state.currentTeam && b===owner) || (b===state.currentTeam && a===owner)
-    );
+    const allianceActive = state.alliancePairs.some(pair => {
+      const teams = pair.teams || pair;
+      return (
+        (teams[0] === state.currentTeam && teams[1] === owner) ||
+        (teams[1] === state.currentTeam && teams[0] === owner)
+      );
+    });
+
     if(allianceActive){
       showModal('Alianza Activa', `<p>Tienes una alianza con ${state.teams[owner].name}. No puedes atacar sus territorios mientras la alianza esté activa.</p>`);
       return;
