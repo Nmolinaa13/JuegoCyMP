@@ -1672,7 +1672,7 @@ function triggerRandomEvent(){
       stealRandomTerritory(ti);
       break;
 
-       case 'all_lose_one': {
+    case 'all_lose_one': {
       let affectedTeams = 0;
 
       for(let i = 0; i < state.numTeams; i++){
@@ -1684,6 +1684,7 @@ function triggerRandomEvent(){
         addLog('Tormenta mediática: ningún equipo perdió territorio porque todos tenían 2 o menos.', 'event');
       }
       break;
+    }
 
     case 'easy_mode':
       team.easyMode = Math.max(team.easyMode || 0, ev.turns);
