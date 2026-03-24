@@ -1,0 +1,1795 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REPÚBLICA — Estrategia Política Colombia</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=IBM+Plex+Mono:wght@400;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');
+
+  :root {
+    --bg: #0d0d0f;
+    --surface: #13131a;
+    --surface2: #1a1a24;
+    --border: #2a2a3a;
+    --text: #e8e4d9;
+    --muted: #6b6880;
+    --accent: #c9a84c;
+    --accent2: #7c5cbf;
+    
+    --team-blue: #2a6fdb;
+    --team-blue-glow: rgba(42,111,219,0.4);
+    --team-red: #d63031;
+    --team-red-glow: rgba(214,48,49,0.4);
+    --team-green: #00b894;
+    --team-green-glow: rgba(0,184,148,0.4);
+    --team-yellow: #f0c40a;
+    --team-yellow-glow: rgba(240,196,10,0.4);
+    --team-neutral: #2d2d3d;
+    --team-neutral-stroke: #3d3d55;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Libre Baskerville', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE OVERLAY ── */
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events:none; z-index:999; opacity:0.5;
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 1.2rem 2rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(180deg, rgba(13,13,15,0.95) 0%, transparent);
+    position: sticky; top:0; z-index:100;
+    backdrop-filter: blur(12px);
+  }
+
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: 1.6rem;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+  .logo span { color: var(--text); font-weight:400; font-size:0.9rem; display:block; letter-spacing:0.3em; }
+
+  .header-info {
+    display:flex; gap:2rem; align-items:center;
+  }
+  .turn-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 0.4rem 1rem;
+    letter-spacing:0.1em;
+    color: var(--muted);
+  }
+  .turn-badge strong { color: var(--accent); }
+
+  /* ── LAYOUT ── */
+  .game-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr 280px;
+    height: calc(100vh - 65px);
+    overflow: hidden;
+  }
+
+  /* ── SIDEBAR LEFT ── */
+  .sidebar-left {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .sidebar-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Teams */
+  .team-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 0.8rem;
+    position: relative;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .team-card:hover { border-color: var(--accent); }
+  .team-card.active-turn {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 20px rgba(201,168,76,0.2);
+  }
+  .team-card.active-turn::before {
+    content: '▶ TURNO';
+    position: absolute; top: 0.4rem; right: 0.6rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--accent);
+    letter-spacing:0.15em;
+  }
+
+  .team-header { display:flex; align-items:center; gap:0.6rem; margin-bottom:0.5rem; }
+  .team-dot { width:12px; height:12px; border-radius:2px; flex-shrink:0; }
+  .team-name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing:0.05em;
+  }
+  .team-stats { display:flex; gap:0.8rem; }
+  .stat { text-align:center; }
+  .stat-val {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    line-height:1;
+  }
+  .stat-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--muted);
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+  }
+
+  .bonus-badge {
+    display:inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    padding: 0.2rem 0.5rem;
+    background: rgba(201,168,76,0.15);
+    border: 1px solid rgba(201,168,76,0.4);
+    color: var(--accent);
+    margin-top: 0.4rem;
+    letter-spacing:0.08em;
+  }
+
+  /* ── MAP CENTER ── */
+  .map-center {
+    position: relative;
+    overflow: hidden;
+    background: radial-gradient(ellipse at 50% 40%, #1a1a2e 0%, #0d0d0f 70%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .map-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    cursor: grab;
+  }
+  .map-container:active { cursor: grabbing; }
+
+  #colombiaMap {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(1);
+    transform-origin: center center;
+    transition: transform 0.15s;
+    width: 420px;
+    height: 580px;
+  }
+
+  .dept-path {
+    stroke-width: 1.2;
+    stroke-linejoin: round;
+    cursor: pointer;
+    transition: opacity 0.2s, filter 0.2s;
+    fill: var(--team-neutral);
+    stroke: var(--team-neutral-stroke);
+  }
+  .dept-path:hover {
+    filter: brightness(1.4);
+    opacity: 0.9;
+  }
+  .dept-path.team-blue  { fill: var(--team-blue);   stroke: #1a5dba; }
+  .dept-path.team-red   { fill: var(--team-red);    stroke: #b02020; }
+  .dept-path.team-green { fill: var(--team-green);  stroke: #009b7a; }
+  .dept-path.team-yellow{ fill: var(--team-yellow); stroke: #c9a200; }
+
+  /* Map zoom controls */
+  .map-controls {
+    position: absolute;
+    bottom: 1.2rem;
+    right: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    z-index:10;
+  }
+  .map-btn {
+    width:32px; height:32px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 1rem;
+    cursor: pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition: background 0.15s, border-color 0.15s;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .map-btn:hover { background: var(--surface); border-color: var(--accent); color: var(--accent); }
+
+  /* Tooltip */
+  #mapTooltip {
+    position: absolute;
+    pointer-events: none;
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    padding: 0.5rem 0.8rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    z-index: 50;
+    display: none;
+    white-space: nowrap;
+  }
+  #mapTooltip .tt-dept { color: var(--text); font-weight:600; }
+  #mapTooltip .tt-owner { color: var(--muted); margin-top:2px; }
+
+  /* ── SIDEBAR RIGHT ── */
+  .sidebar-right {
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* Event Banner */
+  .event-banner {
+    background: linear-gradient(135deg, #1a1020, #2a1a40);
+    border: 1px solid var(--accent2);
+    padding: 0.8rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .event-banner::before {
+    content: '⚡ EVENTO';
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing:0.2em;
+    color: var(--accent2);
+    display:block;
+    margin-bottom:0.4rem;
+  }
+  .event-text {
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: var(--text);
+    font-style: italic;
+  }
+
+  /* Question Panel */
+  .question-panel {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 1rem;
+  }
+
+  .question-header {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing:0.2em;
+    color: var(--muted);
+    text-transform:uppercase;
+    margin-bottom:0.8rem;
+  }
+
+  .dept-target {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-weight:700;
+    color: var(--accent);
+    margin-bottom:0.6rem;
+  }
+
+  .question-text {
+    font-size: 0.82rem;
+    line-height: 1.6;
+    margin-bottom:1rem;
+    color: var(--text);
+  }
+
+  .options-grid { display:flex; flex-direction:column; gap:0.4rem; margin-bottom:1rem; }
+  .option-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.6rem 0.8rem;
+    text-align: left;
+    cursor: pointer;
+    font-family: 'Libre Baskerville', serif;
+    font-size: 0.78rem;
+    transition: all 0.15s;
+    display:flex; align-items:center; gap:0.6rem;
+  }
+  .option-btn:hover { border-color: var(--accent); background: rgba(201,168,76,0.08); }
+  .option-btn.correct { border-color: var(--team-green); background: rgba(0,184,148,0.12); color: var(--team-green); }
+  .option-btn.incorrect { border-color: var(--team-red); background: rgba(214,48,49,0.12); color: var(--team-red); }
+  .option-btn.disabled { opacity:0.5; cursor: not-allowed; }
+  .option-key {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    font-weight:600;
+    color: var(--muted);
+    min-width:16px;
+  }
+
+  .action-row { display:flex; gap:0.5rem; }
+  .btn {
+    flex:1;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.6rem;
+    cursor: pointer;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    transition: all 0.2s;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #000;
+    font-weight:600;
+  }
+  .btn-primary:hover { background: #e0b84a; border-color:#e0b84a; color:#000; }
+  .btn-primary:disabled { opacity:0.4; cursor:not-allowed; background:transparent; color:var(--muted); }
+
+  /* Log */
+  .log-panel { flex:1; overflow-y:auto; }
+  .log-entry {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    padding: 0.35rem 0;
+    border-bottom: 1px solid rgba(42,42,58,0.5);
+    color: var(--muted);
+    line-height: 1.4;
+  }
+  .log-entry.good { color: var(--team-green); }
+  .log-entry.bad { color: var(--team-red); }
+  .log-entry.event { color: var(--accent2); }
+  .log-entry.info { color: var(--accent); }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed; inset:0;
+    background: rgba(0,0,0,0.85);
+    z-index:200;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    animation: fadeIn 0.3s;
+    backdrop-filter: blur(4px);
+  }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    padding: 2rem;
+    max-width: 520px;
+    width: 90%;
+    position: relative;
+    animation: slideUp 0.3s;
+  }
+  .modal-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    font-weight:900;
+    color: var(--accent);
+    margin-bottom:1rem;
+    text-transform:uppercase;
+    letter-spacing:0.1em;
+  }
+  .modal p { font-size:0.9rem; line-height:1.7; margin-bottom:1rem; }
+
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+  /* SETUP SCREEN */
+  #setupScreen {
+    position:fixed; inset:0;
+    background: var(--bg);
+    z-index:300;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .setup-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 2.5rem;
+    max-width:500px;
+    width:90%;
+    text-align:center;
+  }
+  .setup-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight:900;
+    color: var(--accent);
+    letter-spacing:0.2em;
+    text-transform:uppercase;
+    margin-bottom:0.3rem;
+  }
+  .setup-sub {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size:0.7rem;
+    color:var(--muted);
+    letter-spacing:0.2em;
+    text-transform:uppercase;
+    margin-bottom:2rem;
+  }
+
+  .setup-label {
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.7rem;
+    letter-spacing:0.15em;
+    color:var(--muted);
+    text-transform:uppercase;
+    margin-bottom:0.5rem;
+    text-align:left;
+  }
+  .setup-input {
+    width:100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.7rem 1rem;
+    font-family: 'Libre Baskerville', serif;
+    font-size:0.85rem;
+    margin-bottom:0.3rem;
+    outline:none;
+    transition: border-color 0.2s;
+  }
+  .setup-input:focus { border-color: var(--accent); }
+
+  .team-setup-row {
+    display:flex; align-items:center; gap:0.6rem;
+    margin-bottom:0.5rem;
+  }
+  .team-color-dot {
+    width:14px; height:14px; border-radius:2px; flex-shrink:0;
+  }
+  .team-toggle {
+    background:none; border:1px solid var(--border);
+    color:var(--muted); padding:0.3rem 0.6rem;
+    font-family:'IBM Plex Mono', monospace; font-size:0.65rem;
+    cursor:pointer; transition:all 0.15s; letter-spacing:0.1em;
+  }
+  .team-toggle.active { border-color:var(--accent); color:var(--accent); background:rgba(201,168,76,0.1); }
+
+  .num-teams-row { display:flex; gap:0.5rem; margin-bottom:1.5rem; justify-content:center; }
+  .num-btn {
+    width:48px; height:48px;
+    background:var(--surface2); border:1px solid var(--border);
+    color:var(--text); font-family:'Playfair Display',serif; font-size:1.2rem;
+    cursor:pointer; transition:all 0.15s;
+  }
+  .num-btn.active { border-color:var(--accent); color:var(--accent); background:rgba(201,168,76,0.1); }
+
+  /* Victory */
+  .victory-team {
+    font-family:'Playfair Display',serif;
+    font-size:2.5rem;
+    font-weight:900;
+    text-align:center;
+    padding:1rem;
+    margin:1rem 0;
+  }
+  .firework {
+    position:fixed; pointer-events:none; z-index:500;
+    font-size:2rem;
+    animation: firework 1s forwards;
+  }
+  @keyframes firework {
+    0%{transform:scale(0) rotate(0deg);opacity:1}
+    100%{transform:scale(3) rotate(360deg);opacity:0}
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width:4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  .progress-bar-wrap {
+    height:4px;
+    background: var(--surface2);
+    margin-top:0.5rem;
+    overflow:hidden;
+  }
+  .progress-bar-fill {
+    height:100%;
+    transition: width 0.5s, background 0.3s;
+  }
+
+  .divider {
+    border:none;
+    border-top:1px solid var(--border);
+    margin:0.5rem 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- SETUP SCREEN -->
+<div id="setupScreen">
+  <div class="setup-box">
+    <div class="setup-title">República</div>
+    <div class="setup-sub">Estrategia Política · Colombia</div>
+
+    <div class="setup-label">¿Cuántos equipos juegan?</div>
+    <div class="num-teams-row">
+      <button class="num-btn" onclick="selectTeams(2)">2</button>
+      <button class="num-btn active" onclick="selectTeams(3)">3</button>
+      <button class="num-btn" onclick="selectTeams(4)">4</button>
+    </div>
+
+    <div id="teamNameInputs"></div>
+
+    <button class="btn btn-primary" style="width:100%;margin-top:1.5rem;padding:0.9rem;font-size:0.85rem;" onclick="startGame()">
+      ▶ INICIAR CAMPAÑA
+    </button>
+  </div>
+</div>
+
+<!-- MAIN GAME -->
+<header>
+  <div class="logo">República <span>Comunicación & Marketing Político</span></div>
+  <div class="header-info">
+    <div class="turn-badge" id="turnBadge">TURNO <strong>1</strong> — Ronda <strong>1</strong></div>
+    <div class="turn-badge" id="currentTeamBadge">Equipo: <strong>—</strong></div>
+  </div>
+</header>
+
+<div class="game-layout">
+  <!-- LEFT SIDEBAR -->
+  <div class="sidebar-left">
+    <div class="sidebar-title">Marcador</div>
+    <div id="scoreCards"></div>
+    <hr class="divider">
+    <div class="sidebar-title">Distribución</div>
+    <div id="regionBreakdown"></div>
+  </div>
+
+  <!-- MAP -->
+  <div class="map-center">
+    <div class="map-container" id="mapContainer">
+      <svg id="colombiaMap" viewBox="0 0 420 580" xmlns="http://www.w3.org/2000/svg">
+        <!-- Colombia SVG paths by department -->
+        <!-- Each path has data-dept attribute with department key -->
+      </svg>
+      <div id="mapTooltip">
+        <div class="tt-dept" id="ttDept"></div>
+        <div class="tt-owner" id="ttOwner"></div>
+      </div>
+    </div>
+    <div class="map-controls">
+      <button class="map-btn" onclick="zoomMap(1.2)" title="Acercar">+</button>
+      <button class="map-btn" onclick="zoomMap(0.8)" title="Alejar">−</button>
+      <button class="map-btn" onclick="resetMapView()" title="Restablecer">⊙</button>
+    </div>
+  </div>
+
+  <!-- RIGHT SIDEBAR -->
+  <div class="sidebar-right">
+    <div id="eventBannerContainer"></div>
+
+    <div class="question-panel" id="questionPanel">
+      <div class="question-header">— Selecciona un departamento en el mapa —</div>
+      <div class="question-text" style="color:var(--muted);font-style:italic;font-size:0.8rem;">
+        Haz clic sobre cualquier territorio para iniciar la disputa por ese departamento.
+      </div>
+    </div>
+
+    <hr class="divider">
+    <div class="sidebar-title">Registro de campaña</div>
+    <div class="log-panel" id="logPanel"></div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" style="display:none;">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle"></div>
+    <div id="modalBody"></div>
+    <div class="action-row">
+      <button class="btn btn-primary" onclick="closeModal()" id="modalBtn">Continuar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════════
+
+const DEPARTMENTS = {
+  "amazonas":    { name:"Amazonas",    region:"Amazonía" },
+  "antioquia":   { name:"Antioquia",   region:"Andina" },
+  "arauca":      { name:"Arauca",      region:"Orinoquía" },
+  "atlantico":   { name:"Atlántico",   region:"Caribe" },
+  "bolivar":     { name:"Bolívar",     region:"Caribe" },
+  "boyaca":      { name:"Boyacá",      region:"Andina" },
+  "caldas":      { name:"Caldas",      region:"Andina" },
+  "caqueta":     { name:"Caquetá",     region:"Amazonía" },
+  "casanare":    { name:"Casanare",    region:"Orinoquía" },
+  "cauca":       { name:"Cauca",       region:"Andina" },
+  "cesar":       { name:"Cesar",       region:"Caribe" },
+  "choco":       { name:"Chocó",       region:"Pacífica" },
+  "cordoba":     { name:"Córdoba",     region:"Caribe" },
+  "cundinamarca":{ name:"Cundinamarca",region:"Andina" },
+  "guainia":     { name:"Guainía",     region:"Amazonía" },
+  "guaviare":    { name:"Guaviare",    region:"Amazonía" },
+  "huila":       { name:"Huila",       region:"Andina" },
+  "laguajira":   { name:"La Guajira",  region:"Caribe" },
+  "magdalena":   { name:"Magdalena",   region:"Caribe" },
+  "meta":        { name:"Meta",        region:"Orinoquía" },
+  "narino":      { name:"Nariño",      region:"Andina" },
+  "nortedesantander":{ name:"N. de Santander", region:"Andina" },
+  "putumayo":    { name:"Putumayo",    region:"Amazonía" },
+  "quindio":     { name:"Quindío",     region:"Andina" },
+  "risaralda":   { name:"Risaralda",   region:"Andina" },
+  "sanandres":   { name:"San Andrés",  region:"Caribe" },
+  "santander":   { name:"Santander",   region:"Andina" },
+  "sucre":       { name:"Sucre",       region:"Caribe" },
+  "tolima":      { name:"Tolima",      region:"Andina" },
+  "valledecauca":{ name:"Valle del Cauca", region:"Pacífica" },
+  "vaupes":      { name:"Vaupés",      region:"Amazonía" },
+  "vichada":     { name:"Vichada",     region:"Orinoquía" },
+};
+
+const TEAM_COLORS = ["blue","red","green","yellow"];
+const TEAM_COLOR_HEX = { blue:"#2a6fdb", red:"#d63031", green:"#00b894", yellow:"#f0c40a" };
+const TEAM_COLOR_NAMES = { blue:"Azul", red:"Rojo", green:"Verde", yellow:"Amarillo" };
+
+// ── QUESTIONS (expanded pool) ──
+const QUESTIONS = [
+  // ── PREGUNTAS ORIGINALES (nivel universitario) ──
+  {
+    q: "El 'framing' en comunicación política se diferencia del 'agenda setting' principalmente en que:",
+    opts: ["El framing define qué temas son importantes; el agenda setting cómo interpretarlos", "El framing actúa sobre la interpretación del mensaje; el agenda setting sobre la selección de temas", "El framing es exclusivo de medios digitales; el agenda setting de medios tradicionales", "Ambos conceptos son intercambiables en la teoría contemporánea"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "Según McCombs y Shaw, el 'agenda setting' opera fundamentalmente a nivel de:",
+    opts: ["Actitudes afectivas hacia los candidatos", "Transferencia de relevancia temática de los medios a la audiencia", "Control directo de la opinión pública por el Estado", "Producción de contenido viral en redes sociales"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "El microtargeting político se distingue de la segmentación tradicional porque:",
+    opts: ["Usa datos psicográficos y conductuales para mensajes hiperpersonalizados a microsegmentos", "Se centra exclusivamente en votantes indecisos de zonas rurales", "Emplea únicamente encuestas telefónicas para identificar grupos", "Es una técnica reservada a campañas presidenciales con alto presupuesto"],
+    ans: 0, diff: 2
+  },
+  {
+    q: "El 'spin doctor' se diferencia del relacionista público convencional porque su función primordial es:",
+    opts: ["Diseñar la identidad visual del candidato", "Reencuadrar narrativas desfavorables y gestionar la percepción mediática en tiempo real", "Redactar discursos institucionales de largo plazo", "Supervisar el cumplimiento del programa de gobierno"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "El 'astroturfing' político es éticamente cuestionable principalmente porque:",
+    opts: ["Usa fondos públicos para financiar campañas privadas", "Simula movilización ciudadana espontánea para ocultar su origen organizado e interesado", "Viola derechos de autor en materiales de campaña", "Explota datos privados sin consentimiento del usuario"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "La propaganda negativa ('negative campaigning') resulta más eficaz cuando:",
+    opts: ["Se dirige a la base propia para consolidar lealtades", "Se concentra en atributos evaluables del oponente y se emite en etapas finales de campaña", "Se difunde exclusivamente en medios de comunicación masivos", "El candidato atacante tiene alta desaprobación pública"],
+    ans: 1, diff: 3
+  },
+  {
+    q: "Las 'fake news' en contextos electorales son especialmente peligrosas porque:",
+    opts: ["Reducen el financiamiento de los partidos políticos", "Explotan sesgos cognitivos para instalarse como verdades en audiencias poco críticas", "Solo afectan a candidatos sin presencia en redes sociales", "Son fácilmente detectadas por los algoritmos de las plataformas"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "El 'efecto Bandwagon' puede contrarrestarse estratégicamente mediante:",
+    opts: ["Aumentar el gasto en publicidad exterior", "Activar el 'efecto underdog' apelando a la solidaridad con el candidato rezagado", "Reducir la participación del candidato en debates", "Restringir el acceso de la prensa a eventos de campaña"],
+    ans: 1, diff: 3
+  },
+  {
+    q: "El 'posicionamiento' en marketing político moderno es ante todo un proceso de:",
+    opts: ["Ocupación geográfica de territorios electorales prioritarios", "Diferenciación cognitiva y emocional en la mente del votante respecto a los competidores", "Asignación presupuestal de medios según audiencias", "Definición del programa de gobierno con base en encuestas"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "La distinción central entre propaganda y publicidad política radica en que:",
+    opts: ["La propaganda siempre proviene del Estado; la publicidad del sector privado", "La propaganda busca transformar esquemas ideológicos de forma acrítica; la publicidad persuade dentro de marcos racionales aceptados", "La publicidad política es regulada; la propaganda no tiene restricciones legales", "Ambas comparten objetivos idénticos pero difieren solo en sus canales de difusión"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "Las 'cámaras de eco' digitales son especialmente problemáticas para la democracia porque:",
+    opts: ["Aumentan el costo de producción de contenido político", "Refuerzan polarización al privar a los usuarios de exposición a perspectivas divergentes", "Reducen la participación en medios tradicionales", "Generan dependencia tecnológica en los partidos políticos"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "La 'personalización política' como fenómeno estructural es consecuencia de:",
+    opts: ["Una decisión estratégica deliberada de los partidos para fortalecer su imagen", "La confluencia entre la lógica mediática audiovisual y el declive de los partidos como instituciones de identificación colectiva", "El surgimiento de las redes sociales como único canal político relevante", "La regulación electoral que limita la comunicación programática de los partidos"],
+    ans: 1, diff: 3
+  },
+  {
+    q: "El modelo 'two-step flow' de Katz y Lazarsfeld implica que en campañas políticas:",
+    opts: ["Los mensajes masivos tienen efecto directo e inmediato en el comportamiento electoral", "Los líderes de opinión filtran, amplifican o distorsionan los mensajes antes de que lleguen al grueso de la audiencia", "Las campañas deben segmentarse en exactamente dos etapas comunicativas", "La televisión y las redes sociales operan como canales paralelos sin interacción"],
+    ans: 1, diff: 3
+  },
+  {
+    q: "El 'gatekeeping' mediático en el ecosistema digital ha sido transformado porque:",
+    opts: ["Los periodistas ya no tienen criterios editoriales propios", "Los algoritmos de plataformas han asumido funciones de selección y jerarquización de contenidos antes reservadas a editores humanos", "Los gobiernos han centralizado el control de la información pública", "La audiencia dejó de consumir medios tradicionales por completo"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "El 'storytelling' político es más efectivo que la argumentación racional pura porque:",
+    opts: ["Evita el escrutinio intelectual del mensaje político", "Activa procesos de identificación emocional que facilitan la asimilación del mensaje y reducen resistencias cognitivas", "Se difunde más rápido en redes sociales sin necesidad de presupuesto", "Permite ocultar inconsistencias del programa de gobierno"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "El 'media training' para actores políticos es crítico en contextos mediáticos contemporáneos porque:",
+    opts: ["Garantiza cobertura favorable en todos los medios de comunicación", "La sobreexposición mediática multiplica el riesgo de errores comunicativos que se viralizan y dañan la imagen pública", "Permite negociar el contenido editorial con los periodistas", "Sustituye la necesidad de un equipo profesional de comunicación"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "La regulación electoral de publicidad por el CNE en Colombia busca principalmente:",
+    opts: ["Prohibir la propaganda negativa entre candidatos", "Garantizar equidad en el acceso a espacios comunicativos y evitar financiación ilícita de campañas", "Controlar los contenidos ideológicos de los mensajes políticos", "Supervisar el uso de redes sociales durante períodos electorales"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "La 'comunicación de crisis' política se diferencia de la gestión de prensa ordinaria en que:",
+    opts: ["Opera exclusivamente durante campañas electorales", "Requiere velocidad de respuesta, coherencia narrativa y anticipación para controlar el daño reputacional antes de que se instale en la opinión pública", "Implica siempre la contratación de asesores externos especializados", "Se orienta a públicos internos del partido, no a la ciudadanía general"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "El populismo como estrategia comunicativa construye su eficacia sobre:",
+    opts: ["Propuestas programáticas técnicas que generan credibilidad en votantes informados", "La construcción antagónica de un 'pueblo virtuoso' versus una 'élite corrupta' que justifica el liderazgo carismático", "La asociación con medios de comunicación hegemónicos para ampliar el alcance del mensaje", "El distanciamiento deliberado de los símbolos culturales de la identidad nacional"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "La imagen pública de un político es una construcción compleja porque:",
+    opts: ["Depende exclusivamente de la percepción subjetiva de cada votante sin posibilidad de gestión", "Resulta de la interacción entre atributos reales, representaciones mediáticas y marcos interpretativos previos de la audiencia", "Se construye únicamente a través de las redes sociales del candidato", "Es idéntica en todos los segmentos del electorado si el mensaje es coherente"],
+    ans: 1, diff: 2
+  },
+  // ── PREGUNTAS NUEVAS del cuestionario CyMP 2024 ──
+  {
+    q: "Según la distinción clásica de la teoría política, ¿cuál es la diferencia entre 'lo político' y 'la política'?",
+    opts: ["Lo político se refiere a las instituciones formales del Estado; la política a los partidos y elecciones", "'Lo político' refiere a la dimensión ontológica del conflicto y el poder en la sociedad; 'la política' a las prácticas e instituciones que lo procesan", "Son términos sinónimos utilizados por diferentes tradiciones académicas", "Lo político es el ámbito privado; la política el ámbito público de la acción colectiva"],
+    ans: 1, diff: 3
+  },
+  {
+    q: "Según Benjamin Constant, la principal diferencia entre la libertad de los antiguos y la de los modernos radica en que:",
+    opts: ["Los antiguos valoraban la libertad individual; los modernos la participación colectiva", "Los antiguos ejercían libertad como participación directa en el poder colectivo; los modernos la entienden como autonomía individual frente al Estado", "Los modernos tienen más libertades civiles porque el Estado es más pequeño", "Los antiguos no conocían el concepto de derechos individuales"],
+    ans: 1, diff: 3
+  },
+  {
+    q: "La mayor preocupación de Norberto Bobbio respecto a la democracia moderna es:",
+    opts: ["El excesivo poder de los medios de comunicación sobre los gobiernos", "El incumplimiento de las promesas de la democracia, especialmente la persistencia del poder invisible y la tecnocracia frente al ideal de transparencia", "La fragmentación excesiva del sistema de partidos políticos", "La baja participación electoral en los regímenes occidentales"],
+    ans: 1, diff: 3
+  },
+  {
+    q: "Cuando Byung-Chul Han habla de 'Infocracia', se refiere a:",
+    opts: ["El gobierno de los tecnócratas informáticos en las democracias liberales", "Un régimen político donde la información y los datos sustituyen a la voluntad política como principio de gobierno, erosionando la deliberación democrática", "La capacidad de los ciudadanos de acceder libremente a información pública", "El control estatal de los medios de comunicación en regímenes autoritarios"],
+    ans: 1, diff: 3
+  },
+  {
+    q: "Para Manuel Castells, en una sociedad mediatizada el poder reside fundamentalmente en:",
+    opts: ["Los partidos políticos con mayor capacidad de movilización territorial", "Los procesos de construcción de significado, ya que quien controla las redes de comunicación controla los marcos cognitivos que estructuran la acción social", "Las instituciones financieras internacionales que financian los medios de comunicación", "Los algoritmos de las plataformas digitales, que son independientes de actores humanos"],
+    ans: 1, diff: 3
+  },
+  {
+    q: "En la teoría de sistemas de comunicación, ¿cuál es la diferencia entre el 'programador' y el 'metaprogramador'?",
+    opts: ["El programador diseña el software; el metaprogramador lo administra técnicamente", "El programador establece los contenidos y reglas de un sistema comunicativo; el metaprogramador puede intervenir sobre los propios programadores, operando en un nivel de poder superior", "El metaprogramador es el usuario final que consume los contenidos producidos por el programador", "Son roles equivalentes que se diferencian solo por su posición jerárquica dentro de la empresa mediática"],
+    ans: 1, diff: 3
+  },
+  {
+    q: "Según John B. Thompson, la 'política de la visibilidad' implica que en la política contemporánea:",
+    opts: ["Los políticos son juzgados principalmente por su capacidad de gestión técnica de los asuntos públicos", "La persona del político —su carácter, vida privada y autenticidad percibida— importa tanto o más que su rol como estadista o sus propuestas programáticas", "La visibilidad mediática es irrelevante frente a los resultados de gobierno", "Solo los candidatos con presencia constante en medios pueden aspirar a cargos de elección popular"],
+    ans: 1, diff: 3
+  },
+  {
+    q: "La 'administración de la visibilidad' en política implica:",
+    opts: ["La regulación estatal de los tiempos de aparición mediática de los candidatos", "La gestión estratégica de qué aspectos del actor político se hacen visibles u ocultos según el contexto y el público objetivo", "El control técnico de las cámaras y sistemas de transmisión en eventos políticos", "La planificación de la agenda mediática en coordinación con los directores de los principales medios"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "Sobre la cronología tecnológica: ¿qué surgió primero, el 'Like' de Facebook o el smartphone moderno (iPhone)?",
+    opts: ["El Like de Facebook (2009) surgió antes que el iPhone (2010)", "El iPhone (2007) surgió antes que el botón 'Like' de Facebook (2009)", "Ambos se lanzaron simultáneamente en 2007 como parte de la misma revolución digital", "El Like fue introducido por MySpace en 2005, antes que cualquier smartphone"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "¿Cuál de los siguientes conjuntos incluye solo tipos de sensores presentes en smartphones modernos?",
+    opts: ["Acelerómetro, giroscopio, barómetro y sensor de proximidad", "Sensor de temperatura ambiental, detector de CO2, sonar ultrasónico y escáner de retina", "GPS, sensor sísmico, detector de radiación y altímetro de precisión militar", "Sensor de humedad, lector de ondas cerebrales, detector de metales y magnetómetro"],
+    ans: 0, diff: 2
+  },
+  {
+    q: "La diferencia conceptual entre 'redes sociales' y 'medios sociales' es que:",
+    opts: ["Son términos equivalentes que describen el mismo fenómeno tecnológico y social", "Las redes sociales son plataformas centradas en la relación entre usuarios; los medios sociales incluyen cualquier plataforma digital que permita crear y distribuir contenido de forma participativa", "Los medios sociales son exclusivamente plataformas de video; las redes sociales de texto", "Las redes sociales son gestionadas por empresas privadas; los medios sociales por organismos públicos"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "El concepto de 'autocomunicación de masas' de Castells se refiere a:",
+    opts: ["La comunicación interna que hacen las organizaciones mediáticas para coordinar sus equipos", "La posibilidad de que individuos produzcan y difundan mensajes de forma autónoma a audiencias potencialmente masivas, sin mediación de los medios tradicionales", "El fenómeno por el cual los ciudadanos se informan exclusivamente a través de sus propias redes de contactos", "Un tipo de propaganda que simula venir de ciudadanos comunes cuando en realidad es institucional"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "Entre los impactos de los medios sociales en la política, ¿cuál describe mejor una consecuencia estructural?",
+    opts: ["Permiten a los partidos ahorrar dinero en publicidad televisiva de forma significativa", "Habilitan la desintermediación entre líderes políticos y ciudadanos, pero también potencian la desinformación y la polarización afectiva del electorado", "Garantizan mayor transparencia en los procesos electorales al documentar todo públicamente", "Reemplazan completamente los medios tradicionales como fuente de información política"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "Afirmar que 'la política no podría existir sin comunicación' es correcto porque:",
+    opts: ["La comunicación es un instrumento opcional que hace la política más eficiente", "La política como acción colectiva requiere constitutivamente de la comunicación para construir acuerdos, legitimar el poder y movilizar voluntades: sin comunicación no hay campo político", "Solo en democracias la política depende de la comunicación; en otros regímenes no", "La comunicación es relevante en campaña, pero no en el ejercicio del gobierno"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "Teóricamente, la investigación en comunicación política se distingue de su práctica en que:",
+    opts: ["La investigación busca comprender y explicar los fenómenos comunicativos con rigor metodológico; la práctica busca intervenir estratégicamente en esos fenómenos para producir efectos concretos", "La investigación es realizada por universidades y la práctica por consultoras, sin ninguna relación entre ambas", "La investigación se ocupa de medios tradicionales; la práctica de medios digitales", "En realidad no existe distinción, ya que toda investigación es aplicada en política"],
+    ans: 0, diff: 2
+  },
+  {
+    q: "El desarrollo histórico de los medios de comunicación impacta la comunicación política porque:",
+    opts: ["Cambia solo los formatos superficiales sin alterar las dinámicas de poder subyacentes", "Reconfigura las condiciones de visibilidad, alcance, temporalidad e interacción, transformando las lógicas de construcción de legitimidad y de movilización política", "El impacto es limitado: la política siempre termina adaptando los medios a sus necesidades, no al revés", "Solo afecta a los partidos pequeños que no tienen recursos para adaptarse a los nuevos medios"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "Una definición académicamente precisa de 'comunicación política' la entendería como:",
+    opts: ["El conjunto de spots y mensajes que los candidatos difunden durante las campañas electorales", "El campo de estudio y práctica que analiza los procesos de producción, circulación e interpretación de mensajes entre actores políticos, medios y ciudadanos en contextos de poder y legitimidad", "La comunicación oficial que emiten los gobiernos a través de sus voceros institucionales", "El uso estratégico de los medios de comunicación para ganar elecciones"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "¿Cuántos tipos de comunicación política existen según la clasificación académica estándar?",
+    opts: ["Dos: comunicación electoral y comunicación gubernamental", "Cuatro: electoral, gubernamental, institucional y para la influencia", "Tres: interna, externa y de crisis", "No existe consenso; cada autor propone clasificaciones distintas e incompatibles"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "El objetivo primordial de la comunicación gubernamental es:",
+    opts: ["Ganar la próxima elección posicionando al gobernante como candidato", "Informar, legitimar y construir apoyo ciudadano hacia las políticas y acciones del gobierno en ejercicio, fortaleciendo la gobernabilidad", "Atacar a la oposición y desacreditar sus propuestas ante la opinión pública", "Gestionar la imagen personal del presidente o gobernante en funciones"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "La comunicación gubernamental se diferencia de la comunicación institucional en que:",
+    opts: ["La comunicación gubernamental es más costosa y profesionalizada", "La comunicación gubernamental emana del poder ejecutivo en ejercicio y busca legitimar políticas públicas; la institucional proviene de cualquier organización pública o privada y busca proyectar identidad y valores corporativos", "La institucional es regulada por la ley; la gubernamental no tiene restricciones legales", "Son idénticas: toda comunicación institucional es necesariamente gubernamental"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "La comunicación de crisis y la comunicación de riesgo NO son lo mismo porque:",
+    opts: ["La de riesgo es más costosa de implementar y requiere más recursos técnicos", "La comunicación de riesgo anticipa amenazas potenciales para que la ciudadanía se prepare; la de crisis responde a una situación disruptiva ya ocurrida que amenaza la reputación o la estabilidad institucional", "La comunicación de crisis solo aplica a empresas privadas, no a gobiernos", "La de riesgo es unidireccional; la de crisis siempre implica diálogo con las audiencias afectadas"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "La temporalidad esperada de la comunicación de crisis en política es:",
+    opts: ["Permanente, pues las crisis nunca se resuelven completamente en el ámbito político", "Acotada y transitoria: se activa ante el evento disruptivo y debe resolverse con rapidez para evitar que la narrativa de crisis se consolide en la opinión pública", "Mínimo seis meses, que es el tiempo promedio que tarda la opinión pública en olvidar un escándalo", "Indefinida, ya que depende exclusivamente de la voluntad de los medios de comunicación"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "La comunicación para la influencia tiene una direccionalidad predominantemente:",
+    opts: ["Horizontal, entre ciudadanos con igual acceso a los canales de comunicación", "Top-down: emana de actores con poder (Estado, élites, medios) hacia audiencias o públicos objetivo para moldear percepciones y comportamientos", "Bidireccional simétrica, con igual peso en la emisión y recepción del mensaje", "Bottom-up: surge de movimientos ciudadanos hacia las instituciones del poder"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "La comunicación para la influencia puede convertirse en comunicación electoral cuando:",
+    opts: ["Se emite durante el período oficial de campaña establecido por la autoridad electoral", "Sus objetivos de moldear percepciones y comportamientos se orientan específicamente a producir un voto determinado, adoptando las características del contexto electoral competitivo", "El emisor decide registrar formalmente su candidatura ante las autoridades electorales", "Se utilizan los mismos medios y formatos que las campañas electorales tradicionales"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "La direccionalidad de la comunicación electoral es primordialmente:",
+    opts: ["Exclusivamente vertical, del candidato al votante, sin posibilidad de retroalimentación", "Predominantemente top-down, aunque en el ecosistema digital incorpora flujos ascendentes y laterales que retroalimentan la estrategia de campaña", "Simétrica, ya que los votantes tienen el mismo poder comunicativo que los candidatos", "Exclusivamente digital y horizontal en las campañas contemporáneas"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "Entre las características de un mensaje político eficaz, ¿cuál grupo es más relevante académicamente?",
+    opts: ["Extensión, velocidad de difusión y costo de producción", "Claridad, credibilidad de la fuente, relevancia para el receptor y coherencia con la identidad del emisor", "Originalidad estética, humor y uso de celebridades como voceros", "Negatividad, repetición intensiva y ausencia de argumentación racional"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "La intención del emisor puede transformar la recepción del mensaje porque:",
+    opts: ["La intención es irrelevante; solo importa el contenido explícito del mensaje", "La intención condiciona el encuadre, el tono y los elementos paraverbales del mensaje, que la audiencia decodifica (consciente o inconscientemente) para atribuirle un significado que puede diferir del literal", "Los receptores siempre identifican con precisión la intención del emisor gracias a la literalidad del lenguaje", "Solo en contextos de alta alfabetización mediática la intención afecta la interpretación del mensaje"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "¿Qué tipos de comunicación política tienen una direccionalidad predominantemente top-down?",
+    opts: ["La autocomunicación de masas y la comunicación comunitaria", "La comunicación gubernamental, la propaganda institucional y la comunicación para la influencia cuando proviene de actores con poder estructural", "Exclusivamente la comunicación electoral en períodos de campaña formal", "La comunicación de crisis y la comunicación de riesgo en contextos de emergencia"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "Los símbolos son importantes en comunicación política porque:",
+    opts: ["Reducen el costo de producción de los materiales de campaña", "Condensan significados complejos de identidad, pertenencia y valores que activan respuestas emocionales sin requerir procesamiento racional explícito", "Son el único tipo de contenido que los algoritmos priorizan en redes sociales", "Permiten a los candidatos comunicar sin usar lenguaje verbal, evitando errores discursivos"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "El crecimiento del impacto de los símbolos en comunicación política contemporánea se debe principalmente a:",
+    opts: ["Una decisión estratégica coordinada de los principales partidos políticos mundiales", "La hegemonía de los contenidos visuales y audiovisuales en los ecosistemas mediáticos digitales, donde la imagen desplaza al texto como modo dominante de comunicación política", "El declive del nivel educativo de los votantes, que prefieren mensajes simples", "Las regulaciones electorales que limitan el uso de texto en publicidad política"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "El elemento que condiciona absolutamente la interpretación de un símbolo político es:",
+    opts: ["El color dominante del símbolo, que tiene significados universales transculturales", "El contexto cultural, histórico y social compartido por el emisor y el receptor, sin el cual el símbolo carece de significado o produce lecturas imprevistas", "El presupuesto invertido en su diseño y difusión masiva", "La frecuencia de exposición al símbolo, que por sí sola genera familiaridad y aceptación"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "En la comunicación política actual, el tipo de contenido predominante es:",
+    opts: ["El texto argumentativo largo, favorecido por los algoritmos de las plataformas principales", "El contenido audiovisual breve y de alto impacto emocional, que se adapta a los patrones de consumo fragmentado y a las lógicas algorítmicas de distribución", "El debate estructurado en formato televisivo, que sigue siendo el formato de mayor alcance", "El contenido patrocinado en medios gráficos, que mantiene mayor credibilidad entre los votantes"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "La diferencia entre propaganda y publicidad política es relevante porque:",
+    opts: ["Solo la publicidad está regulada legalmente; la propaganda no tiene ningún marco normativo", "La propaganda busca transformar esquemas de creencia de forma acrítica apelando a las emociones e identidades; la publicidad opera dentro de marcos aceptados de persuasión racional en contextos de mercado político", "En la práctica son indistinguibles y su diferenciación es solo académica sin implicaciones reales", "La propaganda es exclusiva de regímenes autoritarios; la publicidad de las democracias liberales"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "La propaganda es más efectiva cuando la audiencia objetivo tiene:",
+    opts: ["Alto nivel educativo y acceso amplio a fuentes diversas de información", "Baja exposición a fuentes alternativas, alta homogeneidad grupal y necesidad psicológica de certeza en contextos de incertidumbre o amenaza", "Experiencia previa en procesos electorales y alta sofisticación política", "Acceso irrestricto a internet y redes sociales diversificadas"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "El emisor es un factor determinante del tipo de propaganda porque:",
+    opts: ["El emisor no influye; lo determinante es exclusivamente el contenido del mensaje", "La legitimidad, la autoridad percibida y los intereses del emisor condicionan los objetivos, los marcos narrativos y el tipo de influencia que la propaganda busca ejercer", "Solo importa si el emisor es estatal o privado, sin otras consideraciones relevantes", "El anonimato del emisor en plataformas digitales ha vuelto irrelevante esta variable"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "La personalización de la política en relación con los medios de comunicación es:",
+    opts: ["Una causa: los medios masivos surgieron para responder a la demanda ciudadana de ver más a los líderes", "Bidireccional: los medios audiovisuales incentivaron el liderazgo personalista, y este liderazgo a su vez refuerza las lógicas de los medios centradas en la figura individual", "Un efecto exclusivo: es solo consecuencia de la televisión, no de otros medios", "Un fenómeno reciente propio del siglo XXI con la aparición de las redes sociales"],
+    ans: 1, diff: 3
+  },
+  {
+    q: "El rasgo diferencial del discurso populista frente a otros discursos políticos es:",
+    opts: ["El uso intensivo de propuestas técnicas detalladas que demuestran competencia gubernamental", "La construcción de una frontera antagónica entre 'el pueblo' (concebido como unidad homogénea y virtuosa) y 'la élite' (como encarnación del mal), articulada por un líder que reclama encarnar directamente la voluntad popular", "La apelación exclusiva a valores liberales de igualdad y libertad individual", "El rechazo sistemático de los medios de comunicación como herramienta de campaña"],
+    ans: 1, diff: 3
+  },
+  {
+    q: "¿Cuáles son las tres características clave para reconocer a un político populista?",
+    opts: ["Carisma personal, propuestas económicas redistributivas y crítica a la globalización", "Autopresentación como ungido del pueblo, construcción de la dicotomía nosotros/ellos, y posicionamiento contra el poder establecido (establishment)", "Uso intensivo de redes sociales, rechazo de asesores profesionales y estilo informal de comunicación", "Discurso emocional, promesas de cambio radical y ausencia de programa de gobierno detallado"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "La 'política POP' se define principalmente como:",
+    opts: ["Una estrategia de comunicación que usa música popular para conectar con votantes jóvenes", "La colonización de la política por las lógicas del entretenimiento y la cultura popular, donde el político adopta códigos, estéticas y dinámicas propias de las celebridades mediáticas", "El movimiento político que promueve políticas culturales de acceso popular al arte", "Una técnica de marketing que simplifica los mensajes políticos para audiencias masivas"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "La distinción entre el político POP y la celebridad pura radica en que:",
+    opts: ["El político POP usa la fama como fin en sí mismo, igual que una celebridad del espectáculo", "El político POP utiliza estratégicamente los códigos de la celebridad para ampliar su base electoral y construir identificación afectiva, pero manteniendo (al menos formalmente) un objetivo de poder político", "El político POP rechaza los medios de comunicación tradicionales y solo usa plataformas digitales", "La distinción es meramente teórica: en la práctica política POP y celebridad son indistinguibles"],
+    ans: 1, diff: 3
+  },
+  {
+    q: "Las redes sociales benefician estratégicamente a un político populista principalmente porque:",
+    opts: ["Permiten evitar completamente los medios de comunicación tradicionales sin costo reputacional", "Habilitan la comunicación directa con el pueblo sin intermediación de periodistas o instituciones, reforzando la narrativa de autenticidad y cercanía que es central en el discurso populista", "Los algoritmos favorecen automáticamente el contenido populista sobre otros tipos de discurso político", "Reducen los costos de campaña a niveles que permiten competir con partidos financiados por élites"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "Una definición rigurosa de 'marketing' en su aplicación al ámbito político lo entendería como:",
+    opts: ["El conjunto de técnicas publicitarias para hacer ganar elecciones a cualquier candidato", "El proceso de análisis del entorno, definición de objetivos, diseño de la oferta política y gestión de los intercambios entre el candidato/partido y sus públicos objetivo, orientado a la satisfacción mutua de necesidades", "La compra de espacios en medios de comunicación para difundir mensajes de campaña", "El diseño de la identidad visual y el slogan del candidato o partido político"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "Los dos tipos de marketing político que existen académicamente son:",
+    opts: ["Marketing de imagen y marketing de contenidos", "Marketing político electoral y marketing político no electoral (o de gobierno/institucional)", "Marketing offline y marketing digital", "Marketing de partido y marketing de candidato"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "El Marketing Político Electoral surge históricamente como disciplina por:",
+    opts: ["La iniciativa de los partidos políticos de profesionalizar sus equipos de comunicación interna", "La confluencia entre el desarrollo de los medios masivos (especialmente la televisión), la personalización de la política y la necesidad de gestionar campañas electorales en democracias de masas complejas", "Una regulación legal que obligó a los partidos a contratar profesionales de la comunicación", "El fracaso de las técnicas de propaganda tradicional ante electorados más educados e informados"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "El objetivo del Marketing Político Electoral, según Maarek y otros autores, es:",
+    opts: ["Garantizar la victoria electoral del candidato mediante el uso de cualquier técnica disponible", "Definir y posicionar los objetivos y programas de los candidatos e influir estratégicamente en los comportamientos electorales de los ciudadanos", "Maximizar la exposición mediática del candidato durante el período de campaña oficial", "Convencer a los votantes indecisos mediante argumentos racionales sobre la calidad del programa"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "La diferencia fundamental entre propaganda política y marketing político es:",
+    opts: ["La propaganda es más efectiva que el marketing en contextos de alta polarización", "La propaganda impone un mensaje de forma unilateral y acrítica; el marketing parte del análisis de las necesidades y expectativas del electorado para construir una oferta política adaptada a ellas", "El marketing es exclusivo de democracias occidentales; la propaganda de regímenes no democráticos", "No hay diferencia sustancial: ambas buscan influir en el comportamiento electoral usando persuasión"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "El breviario de Quinto Tulio Cicerón puede considerarse precursor del MPE porque:",
+    opts: ["Incluye técnicas de propaganda visual y oral muy similares a las del marketing político moderno", "Contiene consejos estratégicos sobre cómo identificar segmentos del electorado, gestionar la imagen del candidato y movilizar redes de apoyo, que anticipan lógicas fundamentales del marketing electoral", "Es el primer documento histórico que menciona explícitamente el concepto de campaña electoral", "Propone el uso de encuestas de opinión para ajustar el mensaje del candidato a las preferencias del pueblo romano"],
+    ans: 1, diff: 3
+  },
+  {
+    q: "Según Maarek, una característica del período de 'infancia' del MPE es:",
+    opts: ["El uso sofisticado de datos de encuestas para segmentar el electorado por perfiles psicográficos", "La dominancia de la televisión como medio central y el desarrollo de las primeras técnicas de construcción de imagen del candidato, aunque de forma intuitiva y poco sistematizada", "La aplicación de metodologías científicas rigurosas de investigación de mercado electoral", "La primacía de los medios digitales interactivos sobre los medios de comunicación tradicionales"],
+    ans: 1, diff: 3
+  },
+  {
+    q: "El suceso que Maarek identifica como marcador del paso del MPE de la 'infancia' a la 'adolescencia' es:",
+    opts: ["La primera campaña presidencial de Barack Obama en 2008 y su uso innovador de internet", "Los debates Kennedy-Nixon de 1960 y el papel decisivo de la televisión en la percepción de los candidatos", "La campaña de Reagan en 1980 y la profesionalización de los equipos de consultores políticos", "La campaña de Bill Clinton en 1992 y el uso sistemático de encuestas y focus groups"],
+    ans: 1, diff: 3
+  },
+  {
+    q: "Según Maarek, el cambio en el discurso político durante la 'edad adulta' del MPE en EE.UU. consistió en:",
+    opts: ["El abandono de la televisión como medio central en favor de las redes sociales digitales", "El paso de un discurso centrado en propuestas programáticas a uno centrado en la gestión de la imagen y las emociones del candidato, adaptado a las lógicas del entretenimiento televisivo", "La recuperación de la deliberación racional y el debate de ideas como eje central de las campañas", "La internacionalización del discurso político para apelar a votantes de origen migrante"],
+    ans: 1, diff: 3
+  },
+  {
+    q: "La investigación en una campaña de MPE sirve principalmente para:",
+    opts: ["Producir datos que legitimen públicamente las propuestas del candidato ante los medios de comunicación", "Reducir la incertidumbre estratégica: identificar segmentos del electorado, mapear el posicionamiento de los competidores, detectar temas prioritarios y evaluar la efectividad de los mensajes", "Cumplir con los requisitos legales de transparencia en el financiamiento de la campaña", "Generar contenido para las redes sociales del candidato de forma eficiente y continua"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "Dos herramientas o estrategias sonoras offline del MPE son:",
+    opts: ["El podcast político y las transmisiones en vivo de Facebook", "La propaganda en radio y los jingles de campaña difundidos en eventos presenciales", "Los audiolibros del candidato y los sistemas de audio en mítines por streaming", "Los parlantes en vehículos de campaña con mensajes grabados y las llamadas robóticas automatizadas"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "Entre los tipos de spots televisivos en política, ¿cuál combinación es académicamente reconocida?",
+    opts: ["Spot de ataque, spot de contraste, spot biográfico y spot de propuesta temática", "Spot emocional, spot viral, spot de hashtag y spot interactivo", "Spot de inauguración, spot de cierre, spot de crisis y spot de alianza", "Spot informativo, spot de entretenimiento, spot de patrocinio y spot de debate"],
+    ans: 0, diff: 2
+  },
+  {
+    q: "Dos elementos clave que transforman el MPE con los medios sociales y los algoritmos son:",
+    opts: ["La eliminación de los asesores de imagen y la reducción del presupuesto de campaña", "La hipersegmentación de audiencias mediante datos y la viralización orgánica del contenido, que alteran radicalmente la distribución y el impacto de los mensajes políticos", "La desaparición de los debates televisivos y la primacía de los comunicados de prensa escritos", "El control total del candidato sobre su narrativa sin posibilidad de interferencia mediática"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "El perfilamiento psicométrico en campañas políticas consiste en:",
+    opts: ["La evaluación psicológica de los propios candidatos para detectar rasgos de liderazgo", "El uso de modelos de personalidad (como el modelo OCEAN) aplicados a datos de comportamiento digital para predecir actitudes políticas y personalizar mensajes a escala masiva", "Un proceso legal de verificación de la salud mental de los candidatos a cargos públicos", "La segmentación del electorado por variables demográficas clásicas como edad, género y nivel socioeconómico"],
+    ans: 1, diff: 3
+  },
+  {
+    q: "El perfilamiento psicométrico NO es una práctica completamente nueva porque:",
+    opts: ["Los partidos políticos del siglo XX ya usaban algoritmos básicos para segmentar votantes", "Sus fundamentos en psicología de la personalidad (como el modelo OCEAN) existen desde los años 60, aunque la escala y automatización que permiten los big data sí representan una novedad radical", "La publicidad comercial lo desarrolló hace más de un siglo y fue adaptado a la política recientemente", "Los gobiernos autoritarios del siglo XX ya aplicaban técnicas psicométricas a escala poblacional"],
+    ans: 1, diff: 3
+  },
+  {
+    q: "El término 'politainment' refiere a:",
+    opts: ["Las políticas públicas de financiamiento al entretenimiento cultural", "La fusión entre política y entretenimiento, donde los códigos, formatos y lógicas del espectáculo colonizan el discurso y la práctica política", "Un género televisivo de documentales sobre campañas electorales", "La estrategia de los partidos de organizar eventos culturales para atraer votantes jóvenes"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "En el análisis de una campaña, los tipos de datos más relevantes incluyen:",
+    opts: ["Solo datos de encuestas de intención de voto y monitoreo de medios tradicionales", "Datos cuantitativos (encuestas, analítica digital, resultados electorales históricos) y cualitativos (focus groups, entrevistas a profundidad, etnografías de comunidades objetivo)", "Exclusivamente datos de redes sociales, ya que son los más actualizados y accesibles", "Datos financieros de contribuciones y datos logísticos de movilización de voluntarios"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "En el análisis de competencia durante una campaña, la revisión de datos se prioriza en:",
+    opts: ["Solo al inicio de la campaña para establecer el diagnóstico de posicionamiento inicial", "En momentos críticos del ciclo electoral: lanzamiento de campaña, después de eventos relevantes (debates, escándalos, cambios en encuestas) y en la recta final antes de la votación", "Exclusivamente durante los períodos de mayor inversión publicitaria del candidato", "De forma continua y en tiempo real sin distinción de momentos del ciclo electoral"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "Además de las campañas de Trump y Brexit, Cambridge Analytica utilizó sus métodos en:",
+    opts: ["Las elecciones presidenciales de Francia (2017) y las de Alemania (2017)", "Las elecciones de Ted Cruz en las primarias republicanas de 2016 y campañas en Nigeria, Kenya y otras elecciones africanas", "Las elecciones de Macron en Francia y las de Trudeau en Canadá", "La campaña de Hillary Clinton y las elecciones legislativas de México 2018"],
+    ans: 1, diff: 3
+  },
+  {
+    q: "Lo verdaderamente innovador de la campaña de Obama 2008 en cuanto a analítica de datos fue:",
+    opts: ["El uso de redes sociales como Twitter y Facebook, que nadie había utilizado antes en política", "La construcción de una infraestructura de datos propia para identificar, contactar y movilizar votantes a nivel individual a escala nacional, integrando analítica predictiva con organización territorial", "El gasto sin precedentes en publicidad televisiva financiada con pequeñas donaciones en línea", "El rechazo del financiamiento público de campaña, que le permitió recaudar más sin restricciones"],
+    ans: 1, diff: 3
+  },
+  {
+    q: "Las redes sociales en campañas políticas modernas cumplen un papel que va más allá de la publicidad porque:",
+    opts: ["Reemplazaron completamente a los medios tradicionales como televisión y radio en la formación de opinión", "Habilitan simultáneamente la difusión de mensajes, la organización de comunidades, la recaudación de fondos, la escucha de la opinión pública y la generación de datos para el perfilamiento del electorado", "Son el único canal donde los candidatos pueden comunicar sin el filtro de los periodistas", "Su bajo costo las hace accesibles a cualquier candidato, independientemente de su nivel de recursos"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "El microtargeting se utiliza en el marketing político de la siguiente manera:",
+    opts: ["Se aplica únicamente en los últimos 15 días de campaña para maximizar su impacto en el voto", "Se cruzan datos de comportamiento, perfil psicográfico y variables sociodemográficas para enviar mensajes diferenciados a microsegmentos específicos del electorado, optimizando recursos y relevancia", "Se centra exclusivamente en persuadir a votantes indecisos, ignorando a los ya decididos", "Es una técnica reservada para campaña digital y no se integra con estrategias de campaña territorial"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "La autenticidad en comunicación política es estratégicamente importante porque:",
+    opts: ["Garantiza que el candidato no necesita asesores de imagen ni equipo profesional de campaña", "En un entorno de alta desconfianza institucional y sobrexposición mediática, la percepción de autenticidad es un diferenciador clave que construye credibilidad y conexión emocional con el electorado", "Los votantes contemporáneos son capaces de detectar infaliblemente cuando un político es inauténtico", "Es un requisito legal para ser candidato en la mayoría de los sistemas democráticos"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "Las elecciones sirven fundamentalmente para:",
+    opts: ["Determinar quién tiene razón en los debates de política pública mediante el voto ciudadano", "Producir representación política legítima, asignar el poder gubernamental de forma pacífica y periódica, y proveer mecanismos de accountability democrático", "Demostrar la superioridad de un sistema político frente a alternativas no democráticas", "Permitir a los ciudadanos expresar su preferencia por políticas específicas de forma directa"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "¿Es posible hablar de comunicación política sin entorno democrático?",
+    opts: ["No, porque la comunicación política requiere libertad de expresión garantizada por el Estado de derecho", "Sí, porque todo sistema político —incluidos los autoritarios— requiere comunicación para construir legitimidad, gestionar obediencia y movilizar apoyo, aunque bajo lógicas y restricciones radicalmente distintas", "Solo parcialmente: puede haber propaganda pero no comunicación política propiamente dicha", "Depende del grado de autoritarismo: en regímenes semi-autoritarios sí, en dictaduras absolutas no"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "El objetivo principal de la comunicación electoral se distingue del de otras formas de comunicación política porque:",
+    opts: ["Es más costosa y requiere mayor inversión en medios de comunicación", "Su meta central y acotada temporalmente es producir un comportamiento electoral concreto (el voto) en una fecha determinada, articulando propuesta, imagen y movilización del electorado objetivo", "Se dirige exclusivamente a votantes indecisos, mientras otras formas de comunicación política van a todos", "Es regulada por el Estado, a diferencia de la comunicación gubernamental e institucional"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "Afirmar que 'toda comunicación tiene intención persuasiva' es:",
+    opts: ["Falso: la comunicación informativa carece de intención persuasiva por definición", "Debatible: aunque toda comunicación implica una selección de qué decir y cómo, la persuasión como objetivo explícito varía según el tipo de acto comunicativo y el contexto institucional", "Verdadero sin matices: toda comunicación busca necesariamente cambiar la conducta del receptor", "Irrelevante para el análisis de la comunicación política, que tiene sus propias categorías analíticas"],
+    ans: 1, diff: 3
+  },
+  {
+    q: "La segmentación de audiencias en comunicación política se puede realizar principalmente a partir de:",
+    opts: ["Variables únicamente demográficas (edad, género, nivel socioeconómico) y variables geográficas (región, municipio, barrio)", "Variables sociodemográficas (edad, género, nivel educativo, NSE, territorio) y variables psicográficas (valores, estilos de vida, actitudes políticas, personalidad)", "Variables de consumo mediático y variables de historial de voto en elecciones anteriores", "Variables algorítmicas definidas por las propias plataformas digitales según el comportamiento en línea"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "El impacto de un mensaje político en un entorno digital se puede medir mediante:",
+    opts: ["Exclusivamente el número de seguidores del candidato en las principales redes sociales", "Una combinación de métricas cuantitativas (alcance, engagement, conversiones, share of voice) y análisis cualitativos (sentiment analysis, análisis de comentarios, grupos focales digitales)", "Solo las encuestas de intención de voto realizadas después de la difusión del mensaje", "El número de veces que el mensaje es citado por los medios de comunicación tradicionales"],
+    ans: 1, diff: 2
+  },
+  {
+    q: "La comunicación de gobiernos puede coexistir con otras formas de comunicación política como:",
+    opts: ["Solo con comunicación institucional de organismos del Estado, no con comunicación partidista", "La comunicación institucional de otras entidades públicas, la comunicación electoral del gobernante cuando aspira a otro cargo, y la comunicación para la influencia en temas de agenda pública", "Exclusivamente con comunicación internacional y diplomática", "Solo con comunicación de crisis, que es la única que complementa funcionalmente a la gubernamental"],
+    ans: 1, diff: 2
+  }
+];
+
+// ── EVENTS ──
+const EVENTS = [
+  {
+    id: "debate_win",
+    title: "¡Victoria en Debate Nacional!",
+    desc: "El equipo {team} demostró superioridad argumentativa en el debate presidencial.",
+    effect: "bonus_x2",
+    turns: 2,
+    icon: "🎙️"
+  },
+  {
+    id: "scandal",
+    title: "¡Escándalo de Corrupción!",
+    desc: "El equipo {team} es señalado en un caso de corrupción. Pierde su próximo turno.",
+    effect: "skip_turn",
+    turns: 1,
+    icon: "📰"
+  },
+  {
+    id: "endorsement",
+    title: "¡Endorsement Masivo!",
+    desc: "El equipo {team} recibe el apoyo de líderes regionales. Puede robar un territorio al azar.",
+    effect: "steal_territory",
+    turns: 0,
+    icon: "⭐"
+  },
+  {
+    id: "media_storm",
+    title: "¡Tormenta Mediática!",
+    desc: "Crisis de imagen nacional. Todos los equipos pierden 1 territorio al azar (si tienen más de 2).",
+    effect: "all_lose_one",
+    turns: 0,
+    icon: "⚡"
+  },
+  {
+    id: "poll_surge",
+    title: "¡Encuesta Favorable!",
+    desc: "El equipo {team} lidera todas las encuestas. Próximas 3 preguntas con dificultad reducida.",
+    effect: "easy_mode",
+    turns: 3,
+    icon: "📊"
+  },
+  {
+    id: "alliance",
+    title: "¡Alianza Estratégica!",
+    desc: "Los equipos {team} y {team2} forman una coalición. Ninguno puede atacarse por 2 turnos.",
+    effect: "alliance",
+    turns: 2,
+    icon: "🤝"
+  },
+  {
+    id: "viral_campaign",
+    title: "¡Campaña Viral!",
+    desc: "El equipo {team} lanza un video viral. Gana automáticamente el próximo territorio en disputa.",
+    effect: "auto_win",
+    turns: 1,
+    icon: "🔥"
+  }
+];
+
+// ═══════════════════════════════════════════════
+//  GAME STATE
+// ═══════════════════════════════════════════════
+
+let state = {
+  teams: [],          // [{name, color, score, territories, bonuses:[]}]
+  map: {},            // {deptKey: teamIndex | null}
+  currentTeam: 0,
+  turnNumber: 1,
+  round: 1,
+  activeEvent: null,
+  selectedDept: null,
+  currentQuestion: null,
+  phase: "select",    // select | answer | result
+  questionsAsked: [],
+  log: [],
+  numTeams: 3,
+  gameOver: false,
+  alliancePairs: [],  // [[ti,tj]] pairs that can't attack each other
+};
+
+// ═══════════════════════════════════════════════
+//  SETUP
+// ═══════════════════════════════════════════════
+
+let setupTeamCount = 3;
+function selectTeams(n) {
+  setupTeamCount = n;
+  document.querySelectorAll('.num-btn').forEach((b,i)=>{
+    b.classList.toggle('active', i+2===n);
+  });
+  renderTeamInputs();
+}
+
+function renderTeamInputs() {
+  const defaultNames = ["Partido Azul","Partido Rojo","Partido Verde","Partido Amarillo"];
+  let html = '';
+  for(let i=0;i<setupTeamCount;i++){
+    const c = TEAM_COLORS[i];
+    html += `
+    <div class="team-setup-row">
+      <div class="team-color-dot" style="background:${TEAM_COLOR_HEX[c]}"></div>
+      <input class="setup-input" id="teamName${i}" placeholder="${defaultNames[i]}" value="${defaultNames[i]}" style="margin-bottom:0">
+    </div>`;
+  }
+  document.getElementById('teamNameInputs').innerHTML = html;
+}
+
+function startGame() {
+  const names = [];
+  for(let i=0;i<setupTeamCount;i++){
+    const v = document.getElementById(`teamName${i}`).value.trim();
+    names.push(v || `Equipo ${i+1}`);
+  }
+  state.numTeams = setupTeamCount;
+  state.teams = names.map((name,i)=>({
+    name, color: TEAM_COLORS[i],
+    score: 0, territories: 0,
+    bonuses: [], skipTurns: 0, autoWin: false, easyMode: 0, allianceWith: -1
+  }));
+  Object.keys(DEPARTMENTS).forEach(k => state.map[k] = null);
+  document.getElementById('setupScreen').style.display = 'none';
+  buildMapSVG();
+  renderAll();
+  addLog(`¡Campaña iniciada! ${state.teams.length} equipos compiten por Colombia.`, 'info');
+}
+
+// ═══════════════════════════════════════════════
+//  MAP SVG
+// ═══════════════════════════════════════════════
+
+// Simplified polygon approximations for Colombia's departments
+// Coordinates in viewBox 0 0 420 580
+const DEPT_PATHS = {
+  laguajira:   "M 250,20 L 300,15 L 320,50 L 290,70 L 255,60 Z",
+  magdalena:   "M 200,40 L 250,20 L 255,60 L 240,100 L 205,110 L 185,80 Z",
+  atlantico:   "M 185,80 L 205,110 L 190,120 L 170,110 L 168,90 Z",
+  bolivar:     "M 155,85 L 185,80 L 190,120 L 185,160 L 155,165 L 135,140 L 140,110 Z",
+  sucre:       "M 135,140 L 155,165 L 145,185 L 125,185 L 118,160 Z",
+  cordoba:     "M 110,110 L 140,110 L 135,140 L 118,160 L 100,150 L 95,125 Z",
+  cesar:       "M 240,100 L 280,95 L 295,130 L 275,165 L 245,160 L 225,145 L 230,115 Z",
+  nortedesantander:"M 275,165 L 310,155 L 325,185 L 300,210 L 270,205 L 260,185 Z",
+  santander:   "M 210,160 L 245,160 L 260,185 L 250,220 L 220,230 L 200,210 L 200,185 Z",
+  boyaca:      "M 200,210 L 250,220 L 260,260 L 235,280 L 200,270 L 185,245 Z",
+  cundinamarca:"M 185,245 L 200,270 L 200,305 L 175,315 L 155,300 L 155,270 L 165,250 Z",
+  antioquia:   "M 95,125 L 140,110 L 155,165 L 145,185 L 125,185 L 120,220 L 100,240 L 80,235 L 68,200 L 75,165 L 88,145 Z",
+  choco:       "M 50,155 L 88,145 L 75,165 L 68,200 L 55,215 L 38,195 L 42,170 Z",
+  caldas:      "M 120,220 L 145,225 L 155,250 L 140,265 L 120,260 L 108,245 L 110,230 Z",
+  risaralda:   "M 108,245 L 120,260 L 118,278 L 100,280 L 95,265 L 98,250 Z",
+  quindio:     "M 118,278 L 130,282 L 130,295 L 115,295 L 112,285 Z",
+  tolima:      "M 140,265 L 155,270 L 155,300 L 145,330 L 120,335 L 108,315 L 110,290 L 118,278 L 130,282 L 130,295 L 145,295 Z",
+  huila:       "M 145,330 L 175,315 L 185,340 L 175,375 L 150,385 L 130,370 L 128,345 Z",
+  cauca:       "M 95,300 L 130,295 L 128,345 L 130,370 L 108,380 L 85,370 L 80,345 L 82,315 Z",
+  narino:      "M 78,370 L 108,380 L 108,410 L 88,425 L 65,415 L 58,390 Z",
+  valledecauca:"M 58,255 L 95,265 L 95,300 L 82,315 L 65,310 L 52,290 L 50,268 Z",
+  putumayo:    "M 108,410 L 140,400 L 155,425 L 148,460 L 120,460 L 100,445 L 95,420 Z",
+  caqueta:     "M 175,375 L 200,370 L 215,400 L 210,440 L 185,455 L 155,455 L 148,460 L 155,425 L 140,400 L 150,385 Z",
+  amazonas:    "M 148,460 L 210,460 L 230,490 L 230,540 L 180,545 L 140,530 L 128,500 L 128,475 Z",
+  vaupes:      "M 215,400 L 255,395 L 270,425 L 260,460 L 230,465 L 210,460 L 210,440 Z",
+  guainia:     "M 270,425 L 310,415 L 325,445 L 310,475 L 280,478 L 260,460 Z",
+  guaviare:    "M 200,370 L 235,360 L 265,370 L 268,400 L 255,395 L 215,400 Z",
+  meta:        "M 200,305 L 235,310 L 255,335 L 265,370 L 235,360 L 200,370 L 185,340 L 175,315 Z",
+  vichada:     "M 265,310 L 320,305 L 345,340 L 330,385 L 295,390 L 268,400 L 265,370 L 255,335 Z",
+  casanare:    "M 255,250 L 305,255 L 320,280 L 315,305 L 265,310 L 255,335 L 235,310 L 235,280 L 250,260 Z",
+  arauca:      "M 265,195 L 310,190 L 340,215 L 330,245 L 295,250 L 265,245 L 260,225 Z",
+  sanandres:   "M 30,80 L 50,80 L 50,100 L 30,100 Z",
+};
+
+function buildMapSVG() {
+  const svg = document.getElementById('colombiaMap');
+  let pathsHTML = '';
+  for(const [key, pathD] of Object.entries(DEPT_PATHS)){
+    const dept = DEPARTMENTS[key];
+    if(!dept) continue;
+    pathsHTML += `<path class="dept-path" id="dept-${key}" data-dept="${key}" d="${pathD}" 
+      onmousemove="showTooltip(event,'${key}')" onmouseleave="hideTooltip()"
+      onclick="onDeptClick('${key}')"/>`;
+  }
+  // Add a legend label for San Andres
+  pathsHTML += `<text x="40" y="115" font-size="5" fill="#888" text-anchor="middle">S.A.</text>`;
+  svg.innerHTML = pathsHTML;
+  updateMapColors();
+}
+
+function updateMapColors() {
+  for(const [key] of Object.entries(DEPT_PATHS)){
+    const el = document.getElementById(`dept-${key}`);
+    if(!el) continue;
+    const owner = state.map[key];
+    el.className.baseVal = 'dept-path';
+    if(owner !== null && owner !== undefined){
+      el.classList.add(`team-${state.teams[owner].color}`);
+    }
+    // Highlight selected
+    if(state.selectedDept === key){
+      el.style.filter = 'brightness(1.6) drop-shadow(0 0 6px currentColor)';
+      el.style.strokeWidth = '2.5';
+    } else {
+      el.style.filter = '';
+      el.style.strokeWidth = '';
+    }
+  }
+}
+
+// ── MAP INTERACTION ──
+let mapScale = 1;
+let mapOffset = {x:0, y:0};
+let isDragging = false, dragStart = {x:0,y:0}, dragOffset = {x:0,y:0};
+
+function applyMapTransform(){
+  const svg = document.getElementById('colombiaMap');
+  svg.style.transform = `translate(calc(-50% + ${mapOffset.x}px), calc(-50% + ${mapOffset.y}px)) scale(${mapScale})`;
+}
+
+function zoomMap(factor){
+  mapScale = Math.max(0.5, Math.min(3, mapScale * factor));
+  applyMapTransform();
+}
+
+function resetMapView(){
+  mapScale = 1;
+  mapOffset = {x:0,y:0};
+  applyMapTransform();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const mc = document.getElementById('mapContainer');
+  mc.addEventListener('mousedown', e => {
+    isDragging = true;
+    dragStart = {x: e.clientX - mapOffset.x, y: e.clientY - mapOffset.y};
+  });
+  document.addEventListener('mousemove', e => {
+    if(!isDragging) return;
+    mapOffset.x = e.clientX - dragStart.x;
+    mapOffset.y = e.clientY - dragStart.y;
+    applyMapTransform();
+  });
+  document.addEventListener('mouseup', () => isDragging = false);
+  mc.addEventListener('wheel', e => {
+    e.preventDefault();
+    zoomMap(e.deltaY < 0 ? 1.1 : 0.9);
+  }, {passive:false});
+});
+
+function showTooltip(e, key){
+  const dept = DEPARTMENTS[key];
+  if(!dept) return;
+  const tt = document.getElementById('mapTooltip');
+  const owner = state.map[key];
+  document.getElementById('ttDept').textContent = dept.name;
+  document.getElementById('ttOwner').textContent = owner !== null && owner !== undefined
+    ? `🏴 ${state.teams[owner].name}` : '○ Sin conquistar';
+  const rect = document.getElementById('mapContainer').getBoundingClientRect();
+  tt.style.display = 'block';
+  tt.style.left = (e.clientX - rect.left + 12) + 'px';
+  tt.style.top = (e.clientY - rect.top - 10) + 'px';
+}
+function hideTooltip(){ document.getElementById('mapTooltip').style.display='none'; }
+
+// ═══════════════════════════════════════════════
+//  GAME FLOW
+// ═══════════════════════════════════════════════
+
+function onDeptClick(key){
+  if(state.gameOver) return;
+  if(state.phase !== 'select') return;
+  const team = state.teams[state.currentTeam];
+
+  // Check skip turn
+  if(team.skipTurns > 0){
+    showModal('Turno Bloqueado', `<p>${team.name} tiene el turno bloqueado por evento político. <strong>Turnos restantes bloqueados: ${team.skipTurns}</strong></p>`);
+    return;
+  }
+
+  // Check alliance — can't attack allied team's territory
+  const owner = state.map[key];
+  if(owner !== null && owner !== undefined && owner !== state.currentTeam){
+    const allianceActive = state.alliancePairs.some(([a,b]) =>
+      (a===state.currentTeam && b===owner) || (b===state.currentTeam && a===owner)
+    );
+    if(allianceActive){
+      showModal('Alianza Activa', `<p>Tienes una alianza con ${state.teams[owner].name}. No puedes atacar sus territorios mientras la alianza esté activa.</p>`);
+      return;
+    }
+  }
+
+  state.selectedDept = key;
+  updateMapColors();
+  loadQuestion(key);
+}
+
+function loadQuestion(key){
+  const dept = DEPARTMENTS[key];
+  const team = state.teams[state.currentTeam];
+
+  // Pick question
+  const available = QUESTIONS.filter((_,i)=>{
+    // easy mode: pick lower difficulty
+    if(team.easyMode > 0) return QUESTIONS[i].diff <= 1;
+    return true;
+  });
+  const pool = available.length > 0 ? available : QUESTIONS;
+  const shuffled = [...pool].sort(()=>Math.random()-0.5);
+  const q = shuffled[0];
+  state.currentQuestion = q;
+
+  const panel = document.getElementById('questionPanel');
+  const ownerLabel = state.map[key] !== null && state.map[key] !== undefined
+    ? `<span style="color:${TEAM_COLOR_HEX[state.teams[state.map[key]].color]}">(${state.teams[state.map[key]].name})</span>` : '';
+  const bonusLabel = team.bonuses.includes('x2') ? '<span style="color:var(--accent)">⚡ DOBLE PUNTAJE ACTIVO</span><br>' : '';
+  const autoLabel  = team.autoWin ? '<span style="color:var(--team-green)">🔥 VICTORIA AUTOMÁTICA</span><br>' : '';
+
+  const optLetters = ['A','B','C','D'];
+  let optsHTML = q.opts.map((o,i)=>`
+    <button class="option-btn" id="opt${i}" onclick="submitAnswer(${i})">
+      <span class="option-key">${optLetters[i]}</span>${o}
+    </button>`).join('');
+
+  panel.innerHTML = `
+    <div class="question-header">— Disputa por territorio —</div>
+    <div class="dept-target">📍 ${dept.name} ${ownerLabel}</div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:0.65rem;color:var(--muted);margin-bottom:0.5rem;">
+      Región: ${dept.region} · Dificultad: ${'★'.repeat(q.diff)}${'☆'.repeat(3-q.diff)}
+    </div>
+    ${bonusLabel}${autoLabel}
+    <div class="question-text">${q.q}</div>
+    <div class="options-grid">${optsHTML}</div>
+    <div class="action-row">
+      <button class="btn" onclick="cancelQuestion()">✕ Cancelar</button>
+    </div>
+  `;
+  state.phase = 'answer';
+}
+
+function submitAnswer(idx){
+  if(state.phase !== 'answer') return;
+  const q = state.currentQuestion;
+  const team = state.teams[state.currentTeam];
+  const dept = DEPARTMENTS[state.selectedDept];
+
+  // Disable all options
+  document.querySelectorAll('.option-btn').forEach(b=>b.classList.add('disabled'));
+  document.querySelectorAll('.option-btn').forEach(b=>b.onclick=null);
+
+  const correct = (idx === q.ans) || team.autoWin;
+  document.getElementById(`opt${q.ans}`).classList.add('correct');
+  if(!correct) document.getElementById(`opt${idx}`)?.classList.add('incorrect');
+
+  state.phase = 'result';
+
+  if(correct){
+    const prevOwner = state.map[state.selectedDept];
+    state.map[state.selectedDept] = state.currentTeam;
+    let points = 1;
+    if(team.bonuses.includes('x2')) points = 2;
+    team.score += points;
+
+    // Remove bonus x2 if used
+    const bIdx = team.bonuses.indexOf('x2');
+    if(bIdx > -1) team.bonuses.splice(bIdx,1);
+    // Remove autoWin
+    if(team.autoWin){ team.autoWin = false; }
+    // Decrease easyMode
+    if(team.easyMode > 0) team.easyMode--;
+
+    const msg = prevOwner !== null && prevOwner !== undefined
+      ? `${team.name} conquistó ${dept.name} a ${state.teams[prevOwner].name}! (+${points} pts)`
+      : `${team.name} conquistó ${dept.name}! (+${points} pts)`;
+    addLog(msg, 'good');
+
+    setTimeout(()=>{
+      updateMapColors();
+      countTerritories();
+      renderAll();
+      checkVictory();
+      if(!state.gameOver) advanceTurn();
+    }, 1200);
+  } else {
+    addLog(`${team.name} falló en ${dept.name}. Turno perdido.`, 'bad');
+    setTimeout(()=>{
+      cancelQuestion();
+      advanceTurn();
+    }, 1200);
+  }
+}
+
+function cancelQuestion(){
+  state.selectedDept = null;
+  state.currentQuestion = null;
+  state.phase = 'select';
+  updateMapColors();
+  document.getElementById('questionPanel').innerHTML = `
+    <div class="question-header">— Selecciona un departamento en el mapa —</div>
+    <div class="question-text" style="color:var(--muted);font-style:italic;font-size:0.8rem;">
+      Haz clic sobre cualquier territorio para iniciar la disputa por ese departamento.
+    </div>
+  `;
+}
+
+function advanceTurn(){
+  state.turnNumber++;
+  const team = state.teams[state.currentTeam];
+
+  // Decrement bonuses
+  team.bonuses = team.bonuses.filter(b=>b!=='x2'); // already removed on use
+
+  // Next team
+  let next = (state.currentTeam + 1) % state.numTeams;
+  // Skip if team has skipTurns
+  let loopGuard = 0;
+  while(state.teams[next].skipTurns > 0 && loopGuard < state.numTeams){
+    state.teams[next].skipTurns--;
+    addLog(`${state.teams[next].name} pierde su turno (evento político).`, 'event');
+    next = (next + 1) % state.numTeams;
+    loopGuard++;
+  }
+  state.currentTeam = next;
+  if(state.currentTeam === 0) state.round++;
+
+  cancelQuestion();
+
+  // Decrement alliance
+  state.alliancePairs = state.alliancePairs.filter(([a,b])=>{
+    // very simple: remove after 2 turns (tracked externally)
+    return true; // managed per event
+  });
+
+  // Random event every 6 turns
+  if(state.turnNumber % 6 === 0){
+    triggerRandomEvent();
+  }
+
+  renderAll();
+}
+
+// ═══════════════════════════════════════════════
+//  EVENTS
+// ═══════════════════════════════════════════════
+
+function triggerRandomEvent(){
+  const ev = EVENTS[Math.floor(Math.random()*EVENTS.length)];
+  const ti = Math.floor(Math.random()*state.numTeams);
+  const ti2 = (ti+1) % state.numTeams;
+  const team = state.teams[ti];
+  const team2 = state.teams[ti2];
+
+  let desc = ev.desc.replace('{team}', `<strong>${team.name}</strong>`)
+                    .replace('{team2}', `<strong>${team2.name}</strong>`);
+
+  state.activeEvent = { ...ev, team: ti, team2: ti2, desc };
+  addLog(`${ev.icon} EVENTO: ${ev.title}`, 'event');
+
+  // Apply effects
+  switch(ev.effect){
+    case 'bonus_x2':
+      for(let t=0; t<ev.turns; t++) team.bonuses.push('x2');
+      break;
+    case 'skip_turn':
+      team.skipTurns += ev.turns;
+      break;
+    case 'steal_territory':
+      stealRandomTerritory(ti);
+      break;
+    case 'all_lose_one':
+      for(let i=0;i<state.numTeams;i++) loseRandomTerritory(i);
+      break;
+    case 'easy_mode':
+      team.easyMode = ev.turns;
+      break;
+    case 'alliance':
+      state.alliancePairs.push([ti,ti2]);
+      setTimeout(()=>{
+        state.alliancePairs = state.alliancePairs.filter(([a,b])=>!(a===ti&&b===ti2));
+      }, ev.turns * 2000);
+      break;
+    case 'auto_win':
+      team.autoWin = true;
+      break;
+  }
+
+  showModal(`${ev.icon} ${ev.title}`, `<p>${desc}</p>`);
+  renderEventBanner();
+  updateMapColors();
+  countTerritories();
+  renderAll();
+}
+
+function stealRandomTerritory(teamIdx){
+  const others = Object.entries(state.map)
+    .filter(([k,v])=>v!==null && v!==undefined && v!==teamIdx);
+  if(others.length===0) return;
+  const [key] = others[Math.floor(Math.random()*others.length)];
+  const prev = state.map[key];
+  state.map[key] = teamIdx;
+  addLog(`${state.teams[teamIdx].name} tomó ${DEPARTMENTS[key].name} de ${state.teams[prev].name} (endorsement).`, 'event');
+}
+
+function loseRandomTerritory(teamIdx){
+  const mine = Object.entries(state.map).filter(([k,v])=>v===teamIdx);
+  if(mine.length<=2) return;
+  const [key] = mine[Math.floor(Math.random()*mine.length)];
+  state.map[key] = null;
+  addLog(`${state.teams[teamIdx].name} perdió ${DEPARTMENTS[key].name} (tormenta mediática).`, 'bad');
+}
+
+function renderEventBanner(){
+  if(!state.activeEvent) {
+    document.getElementById('eventBannerContainer').innerHTML=''; return;
+  }
+  const ev = state.activeEvent;
+  document.getElementById('eventBannerContainer').innerHTML = `
+    <div class="event-banner">
+      <div class="event-text">${ev.icon} <strong>${ev.title}</strong><br>${ev.desc}</div>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════
+
+function countTerritories(){
+  state.teams.forEach((t,i)=>{ t.territories=0; });
+  Object.values(state.map).forEach(owner=>{
+    if(owner!==null&&owner!==undefined) state.teams[owner].territories++;
+  });
+}
+
+function renderAll(){
+  // Header
+  const team = state.teams[state.currentTeam];
+  document.getElementById('turnBadge').innerHTML = `TURNO <strong>${state.turnNumber}</strong> — Ronda <strong>${state.round}</strong>`;
+  document.getElementById('currentTeamBadge').innerHTML = `<span style="color:${TEAM_COLOR_HEX[team.color]}">●</span> <strong>${team.name}</strong>`;
+
+  // Score cards
+  let cardsHTML = '';
+  state.teams.forEach((t,i)=>{
+    const bonus = t.bonuses.length>0 ? `<div class="bonus-badge">⚡ x2 Puntaje (${t.bonuses.length})</div>` : '';
+    const easyLabel = t.easyMode>0 ? `<div class="bonus-badge" style="border-color:var(--team-green);color:var(--team-green)">📊 Preguntas fáciles (${t.easyMode})</div>` : '';
+    const skipLabel = t.skipTurns>0 ? `<div class="bonus-badge" style="border-color:var(--team-red);color:var(--team-red)">🚫 Turno bloqueado (${t.skipTurns})</div>` : '';
+    const autoLabel = t.autoWin ? `<div class="bonus-badge" style="border-color:var(--team-green);color:var(--team-green)">🔥 Victoria automática</div>` : '';
+    cardsHTML += `
+    <div class="team-card ${i===state.currentTeam?'active-turn':''}" style="border-left:3px solid ${TEAM_COLOR_HEX[t.color]}">
+      <div class="team-header">
+        <div class="team-dot" style="background:${TEAM_COLOR_HEX[t.color]}"></div>
+        <div class="team-name" style="color:${TEAM_COLOR_HEX[t.color]}">${t.name}</div>
+      </div>
+      <div class="team-stats">
+        <div class="stat"><div class="stat-val" style="color:${TEAM_COLOR_HEX[t.color]}">${t.score}</div><div class="stat-label">Puntos</div></div>
+        <div class="stat"><div class="stat-val">${t.territories}</div><div class="stat-label">Depts</div></div>
+        <div class="stat"><div class="stat-val">${Math.round(t.territories/Object.keys(DEPARTMENTS).length*100)}%</div><div class="stat-label">Control</div></div>
+      </div>
+      ${bonus}${easyLabel}${skipLabel}${autoLabel}
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" style="width:${t.territories/Object.keys(DEPARTMENTS).length*100}%;background:${TEAM_COLOR_HEX[t.color]}"></div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('scoreCards').innerHTML = cardsHTML;
+
+  // Region breakdown
+  const regions = {};
+  Object.entries(state.map).forEach(([k,v])=>{
+    const r = DEPARTMENTS[k]?.region;
+    if(!regions[r]) regions[r]={total:0,teams:{}};
+    regions[r].total++;
+    if(v!==null&&v!==undefined){
+      regions[r].teams[v]=(regions[r].teams[v]||0)+1;
+    }
+  });
+  let regHTML='';
+  for(const [r,data] of Object.entries(regions)){
+    const dots = Object.entries(data.teams).map(([ti,cnt])=>
+      `<span style="color:${TEAM_COLOR_HEX[state.teams[ti].color]};font-size:0.7rem">■${cnt}</span>`
+    ).join(' ');
+    regHTML+=`<div style="font-family:'IBM Plex Mono',monospace;font-size:0.65rem;margin-bottom:0.3rem;display:flex;justify-content:space-between;align-items:center;">
+      <span style="color:var(--muted)">${r}</span><span>${dots}</span>
+    </div>`;
+  }
+  document.getElementById('regionBreakdown').innerHTML = regHTML;
+
+  // Render log
+  const logEl = document.getElementById('logPanel');
+  logEl.innerHTML = state.log.slice(-20).reverse().map(l=>`<div class="log-entry ${l.type}">${l.msg}</div>`).join('');
+
+  updateMapColors();
+}
+
+function addLog(msg, type=''){
+  state.log.push({msg, type});
+}
+
+// ═══════════════════════════════════════════════
+//  VICTORY
+// ═══════════════════════════════════════════════
+
+function checkVictory(){
+  const total = Object.keys(DEPARTMENTS).length;
+  const winner = state.teams.find(t=> t.territories >= Math.ceil(total*0.6));
+  if(winner){
+    state.gameOver = true;
+    spawnFireworks();
+    showModal(
+      '🏆 ¡Victoria!',
+      `<div class="victory-team" style="color:${TEAM_COLOR_HEX[winner.color]}">${winner.name}</div>
+       <p>Ha conquistado el <strong>${Math.round(winner.territories/total*100)}%</strong> del territorio nacional con <strong>${winner.score} puntos</strong>.</p>
+       <p style="font-style:italic;color:var(--muted)">Resultados finales:</p>
+       ${state.teams.map(t=>`<p style="color:${TEAM_COLOR_HEX[t.color]}">${t.name}: ${t.territories} departamentos · ${t.score} pts</p>`).join('')}`
+    );
+    document.getElementById('modalBtn').textContent = '🔄 Nueva Campaña';
+    document.getElementById('modalBtn').onclick = ()=>location.reload();
+  }
+}
+
+function spawnFireworks(){
+  for(let i=0;i<12;i++){
+    setTimeout(()=>{
+      const el = document.createElement('div');
+      el.className='firework';
+      el.textContent = ['🎉','⭐','🌟','✨','🏆','🎊'][Math.floor(Math.random()*6)];
+      el.style.left = Math.random()*100+'vw';
+      el.style.top = Math.random()*100+'vh';
+      document.body.appendChild(el);
+      setTimeout(()=>el.remove(),1000);
+    }, i*150);
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  MODAL
+// ═══════════════════════════════════════════════
+
+function showModal(title, body){
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalBody').innerHTML = body;
+  document.getElementById('modalBtn').textContent = 'Continuar';
+  document.getElementById('modalBtn').onclick = closeModal;
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function closeModal(){
+  document.getElementById('modal').style.display = 'none';
+}
+
+// ═══════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════
+
+selectTeams(3);
+
+</script>
+</body>
+</html>
