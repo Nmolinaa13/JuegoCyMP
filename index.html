@@ -1219,6 +1219,8 @@ let state = {
   numTeams: 3,
   gameOver: false,
   alliancePairs: [],  // [[ti,tj]] pairs that can't attack each other
+  pendingSteal: null,
+  stealMode: false,
 };
 
 // ═══════════════════════════════════════════════
@@ -1405,47 +1407,61 @@ function hideTooltip(){ document.getElementById('mapTooltip').style.display='non
 
 function onDeptClick(key){
   if(state.gameOver) return;
-  if(state.phase !== 'select') return;
 
-  const team = state.teams[state.currentTeam];
+  // MODO ROBO DE TERRITORIO
+  if(state.stealMode && state.pendingSteal !== null){
+    const stealingTeam = state.pendingSteal;
+    const owner = state.map[key];
 
-  // Si el equipo actual tiene turnos bloqueados, consumir uno y pasar al siguiente
-  if(team.skipTurns > 0){
-    team.skipTurns--;
-    addLog(`${team.name} pierde su turno (evento político).`, 'event');
+    // Solo se puede robar un territorio enemigo ya conquistado
+    if(owner === null || owner === undefined){
+      showModal('Robo de Territorio', '<p>Debes seleccionar un departamento que ya pertenezca a otro equipo.</p>');
+      return;
+    }
 
-    showModal(
-      'Turno Bloqueado',
-      `<p>${team.name} no puede jugar este turno.</p>
-       <p><strong>Turnos restantes bloqueados:</strong> ${team.skipTurns}</p>`
+    if(owner === stealingTeam){
+      showModal('Robo de Territorio', '<p>No puedes robar un territorio que ya te pertenece.</p>');
+      return;
+    }
+
+    const prevOwner = owner;
+    state.map[key] = stealingTeam;
+
+    addLog(
+      `${state.teams[stealingTeam].name} robó ${DEPARTMENTS[key].name} a ${state.teams[prevOwner].name}.`,
+      'event'
     );
 
-    cancelQuestion();
+    state.pendingSteal = null;
+    state.stealMode = false;
+    state.phase = 'select';
 
-    // Al cerrar el modal, avanza automáticamente
-    document.getElementById('modalBtn').onclick = () => {
-      closeModal();
-      advanceTurn();
-    };
+    updateMapColors();
+    countTerritories();
+    renderAll();
+    checkVictory();
+
+    if(!state.gameOver){
+      setTimeout(() => advanceTurn(), 600);
+    }
     return;
   }
 
-  // No atacar a un aliado
+  if(state.phase !== 'select') return;
+  const team = state.teams[state.currentTeam];
+
+  if(team.skipTurns > 0){
+    showModal('Turno Bloqueado', `<p>${team.name} tiene el turno bloqueado por evento político. <strong>Turnos restantes bloqueados: ${team.skipTurns}</strong></p>`);
+    return;
+  }
+
   const owner = state.map[key];
   if(owner !== null && owner !== undefined && owner !== state.currentTeam){
-    const allianceActive = state.alliancePairs.some(pair => {
-      const teams = pair.teams || pair;
-      return (
-        (teams[0] === state.currentTeam && teams[1] === owner) ||
-        (teams[1] === state.currentTeam && teams[0] === owner)
-      );
-    });
-
+    const allianceActive = state.alliancePairs.some(([a,b]) =>
+      (a===state.currentTeam && b===owner) || (b===state.currentTeam && a===owner)
+    );
     if(allianceActive){
-      showModal(
-        'Alianza Activa',
-        `<p>Tienes una alianza con ${state.teams[owner].name}. No puedes atacar sus territorios mientras la alianza esté activa.</p>`
-      );
+      showModal('Alianza Activa', `<p>Tienes una alianza con ${state.teams[owner].name}. No puedes atacar sus territorios mientras la alianza esté activa.</p>`);
       return;
     }
   }
@@ -1616,93 +1632,74 @@ function advanceTurn(){
 
 function triggerRandomEvent(){
   const ev = EVENTS[Math.floor(Math.random() * EVENTS.length)];
-
-  // Equipo afectado aleatoriamente
   const ti = Math.floor(Math.random() * state.numTeams);
-
-  // Segundo equipo aleatorio distinto, solo para eventos como alianza
-  const availableOthers = state.teams
-    .map((_, i) => i)
-    .filter(i => i !== ti);
-  const ti2 = availableOthers[Math.floor(Math.random() * availableOthers.length)];
-
+  const ti2 = (ti + 1) % state.numTeams;
   const team = state.teams[ti];
   const team2 = state.teams[ti2];
 
-  let desc = ev.desc
-    .replace('{team}', `<strong>${team.name}</strong>`)
-    .replace('{team2}', `<strong>${team2.name}</strong>`);
+  let desc = ev.desc.replace('{team}', `<strong>${team.name}</strong>`)
+                    .replace('{team2}', `<strong>${team2.name}</strong>`);
 
   state.activeEvent = { ...ev, team: ti, team2: ti2, desc };
-  addLog(`${ev.icon} EVENTO: ${ev.title} — afecta a ${team.name}`, 'event');
+  addLog(`${ev.icon} EVENTO: ${ev.title}`, 'event');
 
   switch(ev.effect){
     case 'bonus_x2':
       for(let t = 0; t < ev.turns; t++) team.bonuses.push('x2');
+      showModal(`${ev.icon} ${ev.title}`, `<p>${desc}</p>`);
       break;
 
     case 'skip_turn':
       team.skipTurns += ev.turns;
-
-      // Si el afectado es justo el equipo que está jugando, saltar su turno ya mismo
-      if(ti === state.currentTeam && state.phase === 'select'){
-        showModal(
-          `${ev.icon} ${ev.title}`,
-          `<p>${desc}</p>
-           <p><strong>${team.name}</strong> pierde este turno automáticamente.</p>`
-        );
-
-        team.skipTurns--;
-        cancelQuestion();
-
-        document.getElementById('modalBtn').onclick = () => {
-          closeModal();
-          advanceTurn();
-        };
-
-        renderEventBanner();
-        updateMapColors();
-        countTerritories();
-        renderAll();
-        return;
-      }
+      showModal(`${ev.icon} ${ev.title}`, `<p>${desc}</p>`);
       break;
 
-    case 'steal_territory':
-      stealRandomTerritory(ti);
-      break;
+    case 'steal_territory': {
+      const hasTargets = Object.values(state.map).some(owner => owner !== null && owner !== undefined && owner !== ti);
 
-    case 'all_lose_one': {
-      let affectedTeams = 0;
-
-      for(let i = 0; i < state.numTeams; i++){
-        const removed = loseRandomTerritory(i);
-        if(removed) affectedTeams++;
+      if(!hasTargets){
+        addLog(`${team.name} activó robo de territorio, pero no había departamentos rivales disponibles.`, 'info');
+        showModal(`${ev.icon} ${ev.title}`, `<p>${desc}</p><p>No había territorios rivales disponibles para robar.</p>`);
+        break;
       }
 
-      if(affectedTeams === 0){
-        addLog('Tormenta mediática: ningún equipo perdió territorio porque todos tenían 2 o menos.', 'event');
-      }
+      state.pendingSteal = ti;
+      state.stealMode = true;
+      state.phase = 'steal';
+
+      showModal(
+        `${ev.icon} ${ev.title}`,
+        `<p>${desc}</p>
+         <p><strong>${team.name}</strong> puede robar un territorio rival.</p>
+         <p>Cierra esta ventana y haz clic en cualquier departamento enemigo para tomarlo.</p>`
+      );
       break;
     }
 
+    case 'all_lose_one':
+      for(let i = 0; i < state.numTeams; i++) loseRandomTerritory(i);
+      showModal(`${ev.icon} ${ev.title}`, `<p>${desc}</p>`);
+      break;
+
     case 'easy_mode':
-      team.easyMode = Math.max(team.easyMode || 0, ev.turns);
+      team.easyMode = ev.turns;
+      showModal(`${ev.icon} ${ev.title}`, `<p>${desc}</p>`);
       break;
 
     case 'alliance':
-      state.alliancePairs.push({
-        teams: [ti, ti2],
-        turnsLeft: ev.turns
-      });
+      state.alliancePairs.push([ti, ti2]);
+      setTimeout(() => {
+        state.alliancePairs = state.alliancePairs.filter(([a,b]) => !(a === ti && b === ti2));
+      }, ev.turns * 2000);
+      showModal(`${ev.icon} ${ev.title}`, `<p>${desc}</p>`);
       break;
 
     case 'auto_win':
       team.autoWin = true;
+      showModal(`${ev.icon} ${ev.title}`, `<p>${desc}</p>`);
       break;
   }
 
-  showModal(`${ev.icon} ${ev.title}`, `<p>${desc}</p>`);
   renderEventBanner();
   updateMapColors();
   countTerritories();
