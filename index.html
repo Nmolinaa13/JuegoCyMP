@@ -1616,7 +1616,11 @@ function advanceTurn(){
 
 function triggerRandomEvent(){
   const ev = EVENTS[Math.floor(Math.random() * EVENTS.length)];
-  const ti = state.currentTeam;
+
+  // Equipo afectado aleatoriamente
+  const ti = Math.floor(Math.random() * state.numTeams);
+
+  // Segundo equipo aleatorio distinto, solo para eventos como alianza
   const availableOthers = state.teams
     .map((_, i) => i)
     .filter(i => i !== ti);
@@ -1640,12 +1644,12 @@ function triggerRandomEvent(){
     case 'skip_turn':
       team.skipTurns += ev.turns;
 
-      // Si el evento cae sobre el equipo que está jugando ahora mismo,
-      // se consume de inmediato y se pasa el turno.
+      // Si el afectado es justo el equipo que está jugando, saltar su turno ya mismo
       if(ti === state.currentTeam && state.phase === 'select'){
         showModal(
           `${ev.icon} ${ev.title}`,
-          `<p>${desc}</p><p><strong>${team.name}</strong> pierde este turno automáticamente.</p>`
+          `<p>${desc}</p>
+           <p><strong>${team.name}</strong> pierde este turno automáticamente.</p>`
         );
 
         team.skipTurns--;
@@ -1695,7 +1699,7 @@ function triggerRandomEvent(){
   updateMapColors();
   countTerritories();
   renderAll();
-
+}
   showModal(`${ev.icon} ${ev.title}`, `<p>${desc}</p>`);
 }
 
