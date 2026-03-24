@@ -1406,22 +1406,46 @@ function hideTooltip(){ document.getElementById('mapTooltip').style.display='non
 function onDeptClick(key){
   if(state.gameOver) return;
   if(state.phase !== 'select') return;
+
   const team = state.teams[state.currentTeam];
 
-  // Check skip turn
+  // Si el equipo actual tiene turnos bloqueados, consumir uno y pasar al siguiente
   if(team.skipTurns > 0){
-    showModal('Turno Bloqueado', `<p>${team.name} tiene el turno bloqueado por evento político. <strong>Turnos restantes bloqueados: ${team.skipTurns}</strong></p>`);
+    team.skipTurns--;
+    addLog(`${team.name} pierde su turno (evento político).`, 'event');
+
+    showModal(
+      'Turno Bloqueado',
+      `<p>${team.name} no puede jugar este turno.</p>
+       <p><strong>Turnos restantes bloqueados:</strong> ${team.skipTurns}</p>`
+    );
+
+    cancelQuestion();
+
+    // Al cerrar el modal, avanza automáticamente
+    document.getElementById('modalBtn').onclick = () => {
+      closeModal();
+      advanceTurn();
+    };
     return;
   }
 
-  // Check alliance — can't attack allied team's territory
+  // No atacar a un aliado
   const owner = state.map[key];
   if(owner !== null && owner !== undefined && owner !== state.currentTeam){
-    const allianceActive = state.alliancePairs.some(([a,b]) =>
-      (a===state.currentTeam && b===owner) || (b===state.currentTeam && a===owner)
-    );
+    const allianceActive = state.alliancePairs.some(pair => {
+      const teams = pair.teams || pair;
+      return (
+        (teams[0] === state.currentTeam && teams[1] === owner) ||
+        (teams[1] === state.currentTeam && teams[0] === owner)
+      );
+    });
+
     if(allianceActive){
-      showModal('Alianza Activa', `<p>Tienes una alianza con ${state.teams[owner].name}. No puedes atacar sus territorios mientras la alianza esté activa.</p>`);
+      showModal(
+        'Alianza Activa',
+        `<p>Tienes una alianza con ${state.teams[owner].name}. No puedes atacar sus territorios mientras la alianza esté activa.</p>`
+      );
       return;
     }
   }
@@ -1442,8 +1466,21 @@ function loadQuestion(key){
     return true;
   });
   const pool = available.length > 0 ? available : QUESTIONS;
-  const shuffled = [...pool].sort(()=>Math.random()-0.5);
-  const q = shuffled[0];
+   const shuffled = [...pool].sort(() => Math.random() - 0.5);
+  const baseQ = shuffled[0];
+
+  // Barajar también las opciones, preservando cuál era la correcta
+  const shuffledOptions = baseQ.opts.map((text, i) => ({
+    text,
+    originalIndex: i
+  })).sort(() => Math.random() - 0.5);
+
+  const q = {
+    ...baseQ,
+    opts: shuffledOptions.map(o => o.text),
+    ans: shuffledOptions.findIndex(o => o.originalIndex === baseQ.ans)
+  };
+
   state.currentQuestion = q;
 
   const panel = document.getElementById('questionPanel');
@@ -1453,7 +1490,7 @@ function loadQuestion(key){
   const autoLabel  = team.autoWin ? '<span style="color:var(--team-green)">🔥 VICTORIA AUTOMÁTICA</span><br>' : '';
 
   const optLetters = ['A','B','C','D'];
-  let optsHTML = q.opts.map((o,i)=>`
+  let optsHTML = q.opts.map((o, i) => `
     <button class="option-btn" id="opt${i}" onclick="submitAnswer(${i})">
       <span class="option-key">${optLetters[i]}</span>${o}
     </button>`).join('');
@@ -1540,34 +1577,32 @@ function cancelQuestion(){
 }
 
 function advanceTurn(){
-  state.turnNumber++;
-  const team = state.teams[state.currentTeam];
-
-  // Decrement bonuses
-  team.bonuses = team.bonuses.filter(b=>b!=='x2'); // already removed on use
-
-  // Next team
-  let next = (state.currentTeam + 1) % state.numTeams;
-  // Skip if team has skipTurns
-  let loopGuard = 0;
-  while(state.teams[next].skipTurns > 0 && loopGuard < state.numTeams){
-    state.teams[next].skipTurns--;
-    addLog(`${state.teams[next].name} pierde su turno (evento político).`, 'event');
-    next = (next + 1) % state.numTeams;
-    loopGuard++;
-  }
-  state.currentTeam = next;
-  if(state.currentTeam === 0) state.round++;
+  if(state.gameOver) return;
 
   cancelQuestion();
 
-  // Decrement alliance
-  state.alliancePairs = state.alliancePairs.filter(([a,b])=>{
-    // very simple: remove after 2 turns (tracked externally)
-    return true; // managed per event
-  });
+  // limpiar bonus instantáneos que ya no deban persistir
+  const currentTeamObj = state.teams[state.currentTeam];
+  currentTeamObj.bonuses = currentTeamObj.bonuses.filter(b => b !== '__expired__');
 
-  // Random event every 6 turns
+  // avanzar al siguiente equipo
+  const previousTeam = state.currentTeam;
+  state.currentTeam = (state.currentTeam + 1) % state.numTeams;
+  state.turnNumber++;
+
+  if(state.currentTeam === 0){
+    state.round++;
+  }
+
+  // Reducir duración de alianzas en TURNOS reales, no segundos
+  state.alliancePairs = state.alliancePairs
+    .map(pair => ({
+      teams: pair.teams || pair,
+      turnsLeft: (pair.turnsLeft ?? 1) - 1
+    }))
+    .filter(pair => pair.turnsLeft > 0);
+
+  // Evento aleatorio cada 6 turnos
   if(state.turnNumber % 6 === 0){
     triggerRandomEvent();
   }
@@ -1580,41 +1615,76 @@ function advanceTurn(){
 // ═══════════════════════════════════════════════
 
 function triggerRandomEvent(){
-  const ev = EVENTS[Math.floor(Math.random()*EVENTS.length)];
-  const ti = Math.floor(Math.random()*state.numTeams);
-  const ti2 = (ti+1) % state.numTeams;
+  const ev = EVENTS[Math.floor(Math.random() * EVENTS.length)];
+  const ti = state.currentTeam;
+  const availableOthers = state.teams
+    .map((_, i) => i)
+    .filter(i => i !== ti);
+  const ti2 = availableOthers[Math.floor(Math.random() * availableOthers.length)];
+
   const team = state.teams[ti];
   const team2 = state.teams[ti2];
 
-  let desc = ev.desc.replace('{team}', `<strong>${team.name}</strong>`)
-                    .replace('{team2}', `<strong>${team2.name}</strong>`);
+  let desc = ev.desc
+    .replace('{team}', `<strong>${team.name}</strong>`)
+    .replace('{team2}', `<strong>${team2.name}</strong>`);
 
   state.activeEvent = { ...ev, team: ti, team2: ti2, desc };
-  addLog(`${ev.icon} EVENTO: ${ev.title}`, 'event');
+  addLog(`${ev.icon} EVENTO: ${ev.title} — afecta a ${team.name}`, 'event');
 
-  // Apply effects
   switch(ev.effect){
     case 'bonus_x2':
-      for(let t=0; t<ev.turns; t++) team.bonuses.push('x2');
+      for(let t = 0; t < ev.turns; t++) team.bonuses.push('x2');
       break;
+
     case 'skip_turn':
       team.skipTurns += ev.turns;
+
+      // Si el evento cae sobre el equipo que está jugando ahora mismo,
+      // se consume de inmediato y se pasa el turno.
+      if(ti === state.currentTeam && state.phase === 'select'){
+        showModal(
+          `${ev.icon} ${ev.title}`,
+          `<p>${desc}</p><p><strong>${team.name}</strong> pierde este turno automáticamente.</p>`
+        );
+
+        team.skipTurns--;
+        cancelQuestion();
+
+        document.getElementById('modalBtn').onclick = () => {
+          closeModal();
+          advanceTurn();
+        };
+
+        renderEventBanner();
+        updateMapColors();
+        countTerritories();
+        renderAll();
+        return;
+      }
       break;
+
     case 'steal_territory':
       stealRandomTerritory(ti);
       break;
+
     case 'all_lose_one':
-      for(let i=0;i<state.numTeams;i++) loseRandomTerritory(i);
+      for(let i = 0; i < state.numTeams; i++){
+        loseRandomTerritory(i);
+      }
       break;
+
     case 'easy_mode':
-      team.easyMode = ev.turns;
+      team.easyMode = Math.max(team.easyMode || 0, ev.turns);
       break;
+
     case 'alliance':
-      state.alliancePairs.push([ti,ti2]);
-      setTimeout(()=>{
-        state.alliancePairs = state.alliancePairs.filter(([a,b])=>!(a===ti&&b===ti2));
-      }, ev.turns * 2000);
+      state.alliancePairs.push({
+        teams: [ti, ti2],
+        turnsLeft: ev.turns
+      });
       break;
+
     case 'auto_win':
       team.autoWin = true;
       break;
@@ -1625,16 +1695,31 @@ function triggerRandomEvent(){
   updateMapColors();
   countTerritories();
   renderAll();
+
+  showModal(`${ev.icon} ${ev.title}`, `<p>${desc}</p>`);
 }
 
 function stealRandomTerritory(teamIdx){
   const others = Object.entries(state.map)
-    .filter(([k,v])=>v!==null && v!==undefined && v!==teamIdx);
-  if(others.length===0) return;
-  const [key] = others[Math.floor(Math.random()*others.length)];
-  const prev = state.map[key];
+    .filter(([_, owner]) => owner !== null && owner !== undefined && owner !== teamIdx);
+
+  if(others.length === 0){
+    addLog(`${state.teams[teamIdx].name} activó robo de territorio, pero no había territorios rivales disponibles.`, 'info');
+    return false;
+  }
+
+  const [key, prevOwner] = others[Math.floor(Math.random() * others.length)];
   state.map[key] = teamIdx;
-  addLog(`${state.teams[teamIdx].name} tomó ${DEPARTMENTS[key].name} de ${state.teams[prev].name} (endorsement).`, 'event');
+
+  addLog(
+    `${state.teams[teamIdx].name} tomó ${DEPARTMENTS[key].name} de ${state.teams[prevOwner].name} (endorsement).`,
+    'event'
+  );
+
+  countTerritories();
+  updateMapColors();
+  renderAll();
+  return true;
 }
 
 function loseRandomTerritory(teamIdx){
